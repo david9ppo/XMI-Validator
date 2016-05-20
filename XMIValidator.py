@@ -228,6 +228,7 @@ def checkWrongEntities(xmi):
 		for filtro in entFields:
 			entidad=filtro.split(".")[0]
 			campo=filtro.split(".")[1]
+			campo=campo[0].lower()+campo[1:]
 			#comprobar que la entidad existe
 			if(entidad not in model):
 				 errors.add('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
