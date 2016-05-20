@@ -1,4 +1,4 @@
-import sys
+import sys, re
 from xml.dom.minidom import *
 
 if(len(sys.argv)!=2):
@@ -17,10 +17,73 @@ def loadEntities(xmi):
 		entDict[entity.getAttribute("entityName")]=getAttributesFromEntity(entity)
 	return entDict
 
-def viewMap(map):
-	for k, v in map.items():
-		print(k, v)
-	
+# def viewMap(map):
+# 	for k, v in map.items():
+# 		print(k, v)
+
+def extractPosPojo(pojoString):
+	return int(re.findall("[0-9]+", pojoString)[0])
+
+def searchOrphanPojos(xmi):
+	errors=[]
+	nameDtos=[]
+	dtos=xmi.getElementsByTagName("dtos")
+	numDtos=len(dtos)
+	for d in dtos:
+		nameDtos.append(d.getAttribute("dtoName"))
+	uses=[0]*numDtos
+	queries=xmi.getElementsByTagName("queries")
+	for q in queries:
+		retType=q.getElementsByTagName("return")
+		pojo=retType[0].getAttribute("dto")
+		if(pojo!=""):
+			#extraer posicion del dto y aumentar uso
+			pos=extractPosPojo(pojo)
+			uses[pos]+=1
+	# recorrer vector en busca de alguno con 0
+	inusabled=[]
+	for idx,val in enumerate(uses):
+		if(val==0):
+			inusabled.append(idx)
+	#sacar nombre de los no usados
+	for p in inusabled:
+		errors.append(nameDtos[p]+' con posicion @dtos.'+str(p))
+	return errors
+
+
+def checkWrongTypesInPojos(xmi):
+	errors=[]
+	dtos=xmi.getElementsByTagName("dtos")
+	for dto in dtos:
+		attributes=dto.getElementsByTagName("attribtesDTOs")
+		for attr in attributes:
+			name=attr.getAttribute("attributeName")
+			type=attr.getAttribute("type")
+			# validar campos id de tipo Long
+			if(name.startswith("id") or name.startswith("Id") or name.endswith("id") or name.endswith("Id")):
+				if(not(searchWordInText("Long",type))):
+					#añadir error
+					if(type==""):
+						type="String"
+					errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Long. Es de tipo "+type+" .¿Es correcto?")
+			elif(searchWordInText("name",name) or searchWordInText("Name",name) or searchWordInText("Na",name)):
+				if(not type==""):
+					#añadir error
+					errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo String.")
+			elif(searchWordInText("descrip",name) or searchWordInText("Ds",name)):
+				if(not type==""):
+					#añadir error
+					errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo String.")
+			elif(searchWordInText("date",name) or searchWordInText("Date",name)):
+				if(not(searchWordInText("Date",type))):
+					#añadir error
+					errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Date.")
+	return errors
+
+
+
+
+
 def getDAOName(xmi):
 	model=xmi.getElementsByTagName("geniee:Model")
 	return model[0].getAttribute("modelName")
@@ -70,18 +133,14 @@ def checkRuleMethods(xmi):
 	for q in queries:
 		if(q.getAttribute("queryName").find("Rule") > -1):
 			# metodo de reglas
-			#print(q.getAttribute("queryName"))
 			p=q.getElementsByTagName("parameters")
-			#chequear 3 parametros (id, qDate y ruleEvent)
-			#if(len(p)!=3):
-			#	raise ValueError('Metodo de reglas '+q.getAttribute("queryName")+' no tiene 3 parametros de entrada')
 			cont=0
 			for param in p:
-				if(param.getAttribute("parameterName").find("Event")> -1):
+				if(param.getAttribute("parameterName").find("Event")> -1 or param.getAttribute("parameterName").find("event")> -1):
 					cont+=1
 			if cont!=1:
 				errors.append('Metodo de reglas '+q.getAttribute("queryName")+' no tiene parametro de entrada ruleEvent')
-			retType=q.getElementsByTagName("return")#.getAttribute("type")
+			retType=q.getElementsByTagName("return")
 			if(retType[0].getAttribute("type").find("BigDecimal")==-1):
 				errors.append('Metodo de reglas '+q.getAttribute("queryName")+' no devuelve parámetro de tipo BigDecimal')
 	return errors
@@ -126,11 +185,15 @@ def checkParametersType(xmi):
 			if(param.getAttribute("parameterName").find("id")> -1 or param.getAttribute("parameterName").find("Id")> -1):
 				typ=param.getAttribute("type")
 				if(typ.find("Long")==-1):
-					errors.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long')
+					if(typ==""):
+						typ="String"
+					errors.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long. Es de tipo '+typ+'. ¿Es correcto?')
 			elif(param.getAttribute("parameterName").find("queryDate")> -1 or param.getAttribute("parameterName").find("Date")> -1):
 				typ=param.getAttribute("type")
 				if(typ.find("Date")==-1):
-					errors.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date')
+					if(typ==""):
+						typ="String"
+					errors.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date. Es de tipo '+typ+'. ¿Es correcto?')
 
 	return errors
 
@@ -143,95 +206,83 @@ def checkDTDDocumentation(xmi):
 			errors.append(q.getAttribute("queryName"))
 	return errors
 
-def tratarTexto(dtdDoc):
-	l=[]
-	dtdDoc="\n".join(dtdDoc.splitlines())
-	dtdDoc = dtdDoc.replace('\t','')
-	dtdDoc = dtdDoc.replace(">="," ")
-	dtdDoc = dtdDoc.replace("<="," ")
-	dtdDoc = dtdDoc.replace("="," ")
-	dtdDoc = dtdDoc.replace("min"," ")
-	dtdDoc = dtdDoc.replace("max"," ")
-	dtdDoc = dtdDoc.replace("List"," ")
-	dtdDoc = dtdDoc.replace("list"," ")
-	dtdDoc = dtdDoc.replace("<"," ")
-	dtdDoc = dtdDoc.replace(">"," ")
-	#quitar parentesis
-	dtdDoc = dtdDoc.replace("("," ")
-	dtdDoc = dtdDoc.replace(")"," ")
-	if(dtdDoc!=""):
-		l=dtdDoc.split('\n')
-		l=list(filter(lambda x:x!='',l))
-	return l
+def findEntitiesAndFieldsInDTDDoc(dtdDoc):
+	# l=[]
+	# dtdDoc="\n".join(dtdDoc.splitlines())
+	entAndFields=re.findall("[a-zA-Z]{12,}"'\.'"[a-zA-Z]+", dtdDoc)
+	out=[]
+	for eF in entAndFields:
+		capiteF=eF[0].upper()+eF[1:]
+		out.append(capiteF)
+	return out
+
 
 
 def checkWrongEntities(xmi):
-	d=loadEntities(xmi)
-	errors=[]
+	model=loadEntities(xmi)
+	errors=set()
 	queries=xmi.getElementsByTagName("queries")
 	for q in queries:
 		dtdDoc=q.getAttribute("dtdDocumentation")
-		l=tratarTexto(dtdDoc)
-		for linea in l:
-			linea=linea.split(" ")
-			for word in linea:
-				if "." in word: # ENTIDAD.CAMPO
-					#print(word) 
-					entidad=word.split(".")[0]
-					if(entidad!='' and len(entidad)>=12):
-						entidad=entidad[0].upper()+entidad[1:]
-						campo=word.split(".")[1]
-						if(entidad not in d):
-							errors.append('La entidad '+entidad+' que se usa en los filtros del metodo '+q.getAttribute("queryName")+' no existe o tiene un nombre distinto en el modelo')
-						else: #si está
-							if(len(campo)>2):
-								if(campo not in d[entidad]):
-									errors.append('El campo '+campo+' de la entidad '+entidad+' no se encuentra como atributo de esa entidad en el modelo')
-									
-						#print(entidad)
-						#print(campo)
-			# indexesINNER = [i for i,x in enumerate(l) if x == "INNER"]
-			# for ind in indexesINNER:
-				# if(len(l[ind-1])>5):
-					# print(l[ind-1])
-			# indexesJOIN = [i for i,x in enumerate(l) if x == "JOIN"]
-			# for ind in indexesJOIN:
-				# if(len(l[ind+1])>5):
-					# print(l[ind+1])
-	return errors
+		entFields=findEntitiesAndFieldsInDTDDoc(dtdDoc)
+		for filtro in entFields:
+			entidad=filtro.split(".")[0]
+			campo=filtro.split(".")[1]
+			#comprobar que la entidad existe
+			if(entidad not in model):
+				 errors.add('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
+			else: #entidad existe, comprobar que el campo es de esa entidad
+				if(campo not in model[entidad]):
+					errors.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
 
-def searchWordInLine(word, line):
-	if(word in line):
-		return True
-	return False
+		# 	# indexesINNER = [i for i,x in enumerate(l) if x == "INNER"]
+		# 	# for ind in indexesINNER:
+		# 		# if(len(l[ind-1])>5):
+		# 			# print(l[ind-1])
+		# 	# indexesJOIN = [i for i,x in enumerate(l) if x == "JOIN"]
+		# 	# for ind in indexesJOIN:
+		# 		# if(len(l[ind+1])>5):
+		# 			# print(l[ind+1])
+	return sorted(errors)
+
+def searchWordInText(word, text):
+	results=re.findall(word, text)
+	if(results==[]):
+		return False
+	return True
 
 def checkKeywordsInDoc(xmi):
 	errors=[]
-	qDateKW=False
-	idKW=False
-	listaKW=False
-	
 	queries=xmi.getElementsByTagName("queries")
 	for q in queries:
+		qDateKW=False
+		listaKW=False
+		#idKW=False
+
 		dtdDoc=q.getAttribute("dtdDocumentation")
 		param=q.getElementsByTagName("parameters")
-		l=tratarTexto(dtdDoc)
-		for linea in l:
-			linea=linea.split(" ")
-			if(searchWordInLine("queryDate",linea)):
-				qDateKW=True
-			if(searchWordInLine("id",linea)):
-				idKW=True
-			if(searchWordInLine("lista",linea)):
-				listaKW=True
-		#Dar errores si aplica
-		if(qDateKW==True):
+		if(searchWordInText("queryDate",dtdDoc)):
+			qDateKW=True
+		if(searchWordInText("lista",dtdDoc)):
+			listaKW=True
+		# if(searchWordInText("id",dtdDoc)):
+		# 	idKW=True
+
+		#Comprobar queryDate en DOC y que esté como parametro entrada
+		if(qDateKW):
 			paramQueryDate=False
 			for p in param:
-				if(p.getAttribute("parameterName").find("queryDate")> -1 or p.getAttribute("parameterName").find("Date")> -1):
+				if(p.getAttribute("parameterName").find("queryDate")> -1 or p.getAttribute("parameterName").find("Date")> -1 or p.getAttribute("parameterName").find("querydate")> -1):
 					paramQueryDate=True
-			if(paramQueryDate==False): ##queryDate en doc pero no como parametro
+			if(not paramQueryDate): ##queryDate en doc pero no como parametro
 				errors.append('En la DOC del metodo '+q.getAttribute("queryName")+' se hace referencia a un queryDate que no aparece como parámetro de entrada')
+		#Comprobar lista en DOC y que devuelva Colecction or Collection
+		if(listaKW):
+			retType=q.getElementsByTagName("return")
+			if(not searchWordInText("Colecction",retType[0].getAttribute("xsi:type")) and not searchWordInText("Collection",retType[0].getAttribute("xsi:type"))):
+				errors.append('En la DOC del metodo '+q.getAttribute("queryName")+' aparece "lista" y el metodo no devuelve una lista de elementos')
+
+
 	return errors
 	
 f = open('Informe.txt', 'w')
@@ -241,37 +292,74 @@ f.write('**********************************************************'+'\n\n\n\n')
 f.write("Chequeando repositorios y metodos duplicados..."+'\n')
 f.write("==============================================="+'\n')
 e=checkDuplicatedRepositories(dom)
-for error in e:
-	f.write(error+'\n')
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 f.write('\n\n'+"Chequeando parametros en metodos de reglas..."+'\n')
 f.write("============================================="+'\n')
 e=checkRuleMethods(dom)
-for error in e:
-	f.write(error+'\n')
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 f.write('\n\n'+"Chequeando tipos de parametros..."+'\n')
 f.write("================================="+'\n')
 e=checkParametersType(dom)
-for error in e:
-	f.write(error+'\n')
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 f.write('\n\n'+"Chequeando metodos sin Documentacion..."+'\n')
 f.write("======================================="+'\n')
 e=checkDTDDocumentation(dom)
-for error in e:
-	f.write(error+'\n')
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 f.write('\n\n'+"Chequeando entidad.campo en las consultas..."+'\n')
 f.write("======================================="+'\n')
 e=checkWrongEntities(dom)
-for error in e:
-	f.write(error+'\n')
+if(len(e)==0):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 f.write('\n\n'+"Chequeando metodos CatalogText..."+'\n')
 f.write("======================================="+'\n')
 e=checkCatTextMethods(dom)
-for error in e:
-	f.write(error+'\n')
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 f.write('\n\n'+"Chequeando filtros en la DOC que no aparecen como parámetros de entrada..."+'\n')
 f.write("======================================="+'\n')
 e=checkKeywordsInDoc(dom)
-for error in e:
-	f.write(error+'\n')
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
+f.write('\n\n'+"POJOS no devueltos en ningun metodo:"+'\n')
+f.write("======================================="+'\n')
+e=searchOrphanPojos(dom)
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
+f.write('\n\n'+"Comprobando tipos en atributos de los POJOS..."+'\n')
+f.write("======================================="+'\n')
+e=checkWrongTypesInPojos(dom)
+if(e==[]):
+	f.write("OK"+'\n')
+else:
+	for error in e:
+		f.write(error+'\n')
 print("Validacion acabada")
 f.close()
