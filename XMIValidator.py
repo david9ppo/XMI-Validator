@@ -5,8 +5,10 @@ class XMIValidator:
 	"""docstring for ClassName"""
 	def __init__(self, xmi):
 		self.dom = parse(xmi)
+		self.entNames=self.loadEntityNamesInList()
 		self.attrEntModel=self.loadEntitiesAttributes()
 		self.relEntModel=self.loadEntitiesRelationships()
+
 
 	def loadEntitiesAttributes(self):
 		entDict={}
@@ -14,6 +16,19 @@ class XMIValidator:
 		for entity in entities:
 			entDict[entity.getAttribute("entityName")]=self.getAttributesFromEntity(entity)
 		return entDict
+
+	def loadEntityNamesInList(self):
+		names=[]
+		entities = self.dom.getElementsByTagName("entities")
+		for entity in entities:
+			names.append(entity.getAttribute("entityName"))
+		return names
+
+	def getEntityNameByPos(self, index):
+		return self.entNames[index]
+
+	def getEntityNames(self):
+		return self.entNames
 
 	def loadEntitiesRelationships(self):
 		entDict={}
@@ -91,11 +106,16 @@ class XMIValidator:
 			attrList.append(at.getAttribute("attributeName"))
 		return attrList
 
+	def extractPosEntity(self, string):
+		return re.search('@entities.[0-9]+', string).group(0).split(".")[1]
+
 	def getRelationshipsFromEntity(self,entity):
 		relList=[]
 		rels=entity.getElementsByTagName("relationships")
 		for r in rels:
-			relList.append(r.getAttribute("relationshipName"))
+			cadena=r.getAttribute("endRelationShip")
+			pos=int(self.extractPosEntity(cadena))
+			relList.append(self.getEntityNameByPos(pos))
 		return relList
 
 	def checkDuplicatedRepositories(self):
@@ -223,25 +243,40 @@ class XMIValidator:
 		lista=[]
 		#extraer INNER JOINS
 		cadena=re.findall('[a-zA-Z]{12,} +INNER +JOIN +[a-zA-Z]+', dtdDoc)
-		print("Inners")
 		for c in cadena:
-			print(re.sub('\s+',"#",c).split("#"))
+			lista.append(re.sub('\s+',"#",c).split("#"))
 		#extraer LEFT JOINS
 		cadena=re.findall('[a-zA-Z]{12,} +LEFT +JOIN +[a-zA-Z]+', dtdDoc)
-		print("lefts")
 		for c in cadena:
-			print(re.sub('\s+',"#",c).split("#"))
+			lista.append(re.sub('\s+',"#",c).split("#"))
 		#extraer entidad1 (as xxx) y entidad2
 		cadena=re.findall('[a-zA-Z]{12,} +y +[a-zA-Z]{12,}', dtdDoc)
-		print("YS as")
 		for c in cadena:
-			print(re.sub('\s+',"#",c).split("#"))
+			lista.append(re.sub('\s+',"#",c).split("#"))
+		return lista
 
 	def checkValidityEntitiesJoins(self):
+		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			dtdDoc=q.getAttribute("dtdDocumentation")
-			self.extractEntitiesFromJoins(dtdDoc)
+			joins=self.extractEntitiesFromJoins(dtdDoc)
+			for j in joins: # entIzq INNER JOIN entDer o entIzq LEFT JOIN entDer o entIzq y entDer
+				entIzq=j[0]
+				entDer=j[-1]
+				if(entIzq not in self.attrEntModel):
+					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzq+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+				if(entDer not in self.attrEntModel):
+					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDer+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+				entIzqNew=entIzq[0].upper()+entIzq[1:]
+				entDerNew=entDer[0].upper()+entDer[1:]
+				# verifica si es posible por modelo la JOIN entre entIzq y entDer
+				# print(entDer)
+				# si existe la entDerNew, miro si se puede hacer la JOIN
+				if(entDerNew in self.relEntModel.keys()):
+				 	if(entIzqNew not in self.relEntModel[entDerNew]):
+				 		warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzq+' y '+entDer+' .')
+			return warnings
 
 	def checkWrongEntities(self):
 		errors=set()
@@ -313,7 +348,7 @@ class XMIValidator:
 		f = open('Informe_'+name+'.txt', 'w')
 		f.write('**********************************************************'+'\n')
 		f.write('Validaciones del DAO '+self.getDAOName()+'\n')
-		f.write('**********************************************************'+'\n\n\n\n')
+		f.write('**********************************************************'+'\n\n')
 		f.write("Chequeando repositorios y metodos duplicados..."+'\n')
 		f.write("==============================================="+'\n')
 		e=self.checkDuplicatedRepositories()
@@ -386,9 +421,16 @@ class XMIValidator:
 		else:
 			for error in e:
 				f.write(error+'\n')
+		f.write('\n\n'+"Comprobando validez de las JOINS..."+'\n')
+		f.write("======================================="+'\n')
+		e=self.checkValidityEntitiesJoins()
+		if(e==[]):
+			f.write("OK"+'\n')
+		else:
+			for error in e:
+				f.write(error+'\n')
 		print("Validacion acabada")
 		f.close()
-		#self.checkValidityEntitiesJoins()
 
 
 if(len(sys.argv)<2):
