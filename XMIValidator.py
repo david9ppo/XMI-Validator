@@ -398,7 +398,7 @@ class XMIValidator:
 				# si existe la entDerNew, miro si se puede hacer la JOIN
 				if(entDerNew in self.relEntModel.keys()):
 				 	if(entIzqNew not in self.relEntModel[entDerNew]):
-				 		warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+' .')
+				 		warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
 		return warnings
 
 	def checkWrongEntities(self):
@@ -458,7 +458,7 @@ class XMIValidator:
 		for q in queries:
 			qDateKW=False
 			listaKW=False
-			#idKW=False
+			idKW=False
 
 			dtdDoc=q.getAttribute("dtdDocumentation")
 			param=q.getElementsByTagName("parameters")
@@ -466,8 +466,9 @@ class XMIValidator:
 				qDateKW=True
 			if(self.searchWordInText("lista",dtdDoc)):
 				listaKW=True
-			# if(searchWordInText("id",dtdDoc)):
-			# 	idKW=True
+			res=re.findall(' *= *[a-zA-z_]*i?I?d[a-zA-Z_]*', dtdDoc)
+			if(res!=[]):
+				idKW=True
 
 			#Comprobar queryDate en DOC y que esté como parametro entrada
 			if(qDateKW):
@@ -482,6 +483,14 @@ class XMIValidator:
 				retType=q.getElementsByTagName("return")
 				if(not self.searchWordInText("Colecction",retType[0].getAttribute("xsi:type")) and not self.searchWordInText("Collection",retType[0].getAttribute("xsi:type"))):
 					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' aparece "lista" y el metodo no devuelve una lista de elementos')
+			#Comprobar id en DOC y que haya un parametro de entrada con id
+			if(idKW):
+				paramId=False
+				for p in param:
+					if(p.getAttribute("parameterName").find("id")> -1 or p.getAttribute("parameterName").find("Id")> -1 or p.getAttribute("parameterName").find("productNumber")> -1 or p.getAttribute("parameterName").find("productnumber")> -1):
+						paramId=True
+				if(not paramId): ##id en doc pero no como parametro
+					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' se hace referencia a un id que no aparece como parámetro de entrada')
 		return warnings
 
 	def generateReport(self):
