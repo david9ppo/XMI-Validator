@@ -10,16 +10,19 @@ else:
 
 dom=parse(doc)
 
-def loadEntities(xmi):
+def loadEntitiesAttributes(xmi):
 	entDict={}
 	entities = xmi.getElementsByTagName("entities")
 	for entity in entities:
 		entDict[entity.getAttribute("entityName")]=getAttributesFromEntity(entity)
 	return entDict
 
-# def viewMap(map):
-# 	for k, v in map.items():
-# 		print(k, v)
+def loadEntitiesRelationships(xmi):
+	entDict={}
+	entities = xmi.getElementsByTagName("entities")
+	for entity in entities:
+		entDict[entity.getAttribute("entityName")]=getRelationshipsFromEntity(entity)
+	return entDict
 
 def extractPosPojo(pojoString):
 	return int(re.findall("[0-9]+", pojoString)[0])
@@ -94,6 +97,13 @@ def getAttributesFromEntity(entity):
 	for at in attributes:
 		attrList.append(at.getAttribute("attributeName"))
 	return attrList
+
+def getRelationshipsFromEntity(entity):
+	relList=[]
+	rels=entity.getElementsByTagName("relationships")
+	for r in rels:
+		relList.append(r.getAttribute("relationshipName"))
+	return relList
 	
 def checkDuplicatedRepositories(xmi):
 	errors=[]
@@ -216,10 +226,35 @@ def findEntitiesAndFieldsInDTDDoc(dtdDoc):
 		out.append(capiteF)
 	return out
 
+def extractEntitiesFromJoins(dtdDoc):
+	lista=[]
+	#extraer INNER JOINS
+	cadena=re.findall('[a-zA-Z]{12,} +INNER +JOIN +[a-zA-Z]+', dtdDoc)
+	print("Inners")
+	for c in cadena:
+		print(re.sub('\s+',"#",c).split("#"))
+	#extraer LEFT JOINS
+	cadena=re.findall('[a-zA-Z]{12,} +LEFT +JOIN +[a-zA-Z]+', dtdDoc)
+	print("lefts")
+	for c in cadena:
+		print(re.sub('\s+',"#",c).split("#"))
+	#extraer entidad1 (as xxx) y entidad2
+	cadena=re.findall('[a-zA-Z]{12,} +y +[a-zA-Z]{12,}', dtdDoc)
+	print("YS as")
+	for c in cadena:
+		print(re.sub('\s+',"#",c).split("#"))
+
+def checkValidityEntitiesJoins(xmi):
+	queries=xmi.getElementsByTagName("queries")
+	for q in queries:
+		dtdDoc=q.getAttribute("dtdDocumentation")
+		extractEntitiesFromJoins(dtdDoc)
+
+
 
 
 def checkWrongEntities(xmi):
-	model=loadEntities(xmi)
+	model=loadEntitiesAttributes(xmi)
 	errors=set()
 	queries=xmi.getElementsByTagName("queries")
 	for q in queries:
@@ -364,3 +399,5 @@ else:
 		f.write(error+'\n')
 print("Validacion acabada")
 f.close()
+checkValidityEntitiesJoins(dom)
+print(loadEntitiesRelationships(dom))
