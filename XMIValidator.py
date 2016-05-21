@@ -356,8 +356,16 @@ class XMIValidator:
 		cadena=re.findall('[a-zA-Z]{12,} +LEFT +JOIN +[a-zA-Z]+', dtdDoc)
 		for c in cadena:
 			lista.append(re.sub('\s+',"#",c).split("#"))
-		#extraer entidad1 (as xxx) y entidad2
+		#extraer entidad1 y entidad2
 		cadena=re.findall('[a-zA-Z]{12,} +y +[a-zA-Z]{12,}', dtdDoc)
+		for c in cadena:
+			lista.append(re.sub('\s+',"#",c).split("#"))
+		#extraer entidad1 as xxxx    y entidad2
+		cadena=re.findall('[a-zA-Z]{12,} +as +[a-zA-Z0-9]+ +y +[a-zA-Z]{12,}', dtdDoc)
+		for c in cadena:
+			lista.append(re.sub('\s+',"#",c).split("#"))
+		#extraer entidad1 AS xxxx    y entidad2
+		cadena=re.findall('[a-zA-Z]{12,} +AS +[a-zA-Z0-9]+ +y +[a-zA-Z]{12,}', dtdDoc)
 		for c in cadena:
 			lista.append(re.sub('\s+',"#",c).split("#"))
 		return lista
