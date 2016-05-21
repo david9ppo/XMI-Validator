@@ -1,0 +1,211 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html><head><title>Python: module XMIValidator</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+</head><body bgcolor="#f0f0f8">
+
+
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+
+<tr bgcolor="#7799ee">
+
+<td valign=bottom>&nbsp;<br>
+
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>XMIValidator</strong></big></big></font></td
+
+><td align=right valign=bottom
+
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cdavid_000%5Cdesktop%5Cxmi-validator%5Cxmivalidator.py">c:\users\david_000\desktop\xmi-validator\xmivalidator.py</a></font></td></tr></table>
+
+    <p></p>
+<p>
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+
+<tr bgcolor="#aa55cc">
+
+<td colspan=3 valign=bottom>&nbsp;<br>
+
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+
+    
+
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="xml.dom.domreg.html">xml.dom.domreg</a><br>
+<a href="io.html">io</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+<a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="xml.html">xml</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+
+<tr bgcolor="#ee77aa">
+
+<td colspan=3 valign=bottom>&nbsp;<br>
+
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+
+    
+
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="XMIValidator.html#XMIValidator">XMIValidator</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+
+<tr bgcolor="#ffc8d8">
+
+<td colspan=3 valign=bottom>&nbsp;<br>
+
+<font color="#000000" face="helvetica, arial"><a name="XMIValidator">class <strong>XMIValidator</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+
+    
+
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+
+<td colspan=2><tt>Clase&nbsp;que&nbsp;recibe&nbsp;y&nbsp;parsea&nbsp;el&nbsp;xmi&nbsp;y&nbsp;realiza&nbsp;validaciones&nbsp;para&nbsp;generar&nbsp;un&nbsp;informe&nbsp;con&nbsp;el&nbsp;resultado&nbsp;de&nbsp;estas.<br>&nbsp;</tt></td></tr>
+
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="XMIValidator-__init__"><strong>__init__</strong></a>(self, xmi)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkCatTextMethods"><strong>checkCatTextMethods</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;analiza&nbsp;metodos&nbsp;de&nbsp;recuperacion&nbsp;de&nbsp;CatalogText&nbsp;y&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;no&nbsp;recibe&nbsp;como&nbsp;parametros&nbsp;de&nbsp;entrada&nbsp;los&nbsp;3&nbsp;filtros&nbsp;(textType,&nbsp;textUse&nbsp;y&nbsp;publishMedia)<br>
+-&nbsp;alguno&nbsp;de&nbsp;ellos&nbsp;no&nbsp;es&nbsp;de&nbsp;tipo&nbsp;Long</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkDTDDocumentation"><strong>checkDTDDocumentation</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;alguna&nbsp;query&nbsp;no&nbsp;tiene&nbsp;relleno&nbsp;el&nbsp;campo&nbsp;Documentacion&nbsp;DTD</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkDuplicatedQueriesInRepo"><strong>checkDuplicatedQueriesInRepo</strong></a>(self, repo)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;con&nbsp;los&nbsp;nombres<br>
+de&nbsp;las&nbsp;queries&nbsp;repetidas&nbsp;en&nbsp;un&nbsp;repositorio&nbsp;dado,&nbsp;si&nbsp;se&nbsp;da&nbsp;el&nbsp;caso.<br>
+&nbsp;<br>
+Tambien&nbsp;comprueba&nbsp;que&nbsp;no&nbsp;existan&nbsp;repositorios&nbsp;sin&nbsp;queries&nbsp;definidas.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkDuplicatedRepositories"><strong>checkDuplicatedRepositories</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;con&nbsp;los&nbsp;nombres<br>
+de&nbsp;los&nbsp;repositorios&nbsp;repetidos&nbsp;en&nbsp;el&nbsp;modelo,&nbsp;si&nbsp;los&nbsp;hay.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkKeywordsInDoc"><strong>checkKeywordsInDoc</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;realiza&nbsp;algunas&nbsp;validaciones&nbsp;entre&nbsp;los&nbsp;parametros&nbsp;y&nbsp;la&nbsp;documentacion&nbsp;de&nbsp;la&nbsp;consulta.&nbsp;Devuelve&nbsp;una&nbsp;lista<br>
+de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;si&nbsp;se&nbsp;hace&nbsp;referencia&nbsp;a&nbsp;un&nbsp;queryDate&nbsp;que&nbsp;NO&nbsp;aparece&nbsp;como&nbsp;parametro&nbsp;de&nbsp;entrada.<br>
+-&nbsp;si&nbsp;aparece&nbsp;la&nbsp;palabra&nbsp;"lista"&nbsp;y&nbsp;NO&nbsp;se&nbsp;devuelve&nbsp;una&nbsp;Colecction</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkParametersType"><strong>checkParametersType</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;busca&nbsp;tipos&nbsp;incorrectos&nbsp;en&nbsp;parametros&nbsp;de&nbsp;entrada&nbsp;y&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;algun&nbsp;parametro&nbsp;id&nbsp;no&nbsp;es&nbsp;de&nbsp;tipo&nbsp;Long<br>
+-&nbsp;algun&nbsp;parametro&nbsp;queryDate&nbsp;no&nbsp;es&nbsp;de&nbsp;tipo&nbsp;Date</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkRuleMethods"><strong>checkRuleMethods</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;analiza&nbsp;metodos&nbsp;de&nbsp;recuperacion&nbsp;de&nbsp;Reglas&nbsp;y&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;no&nbsp;tiene&nbsp;como&nbsp;parametro&nbsp;de&nbsp;entrada&nbsp;un&nbsp;ruleEvent<br>
+-&nbsp;no&nbsp;devuelve&nbsp;parametro&nbsp;de&nbsp;salida&nbsp;de&nbsp;tipo&nbsp;BigDecimal</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkValidityEntitiesJoins"><strong>checkValidityEntitiesJoins</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;realiza&nbsp;algunas&nbsp;validaciones&nbsp;sobre&nbsp;las&nbsp;JOINS&nbsp;escritas.&nbsp;Devuelve&nbsp;una&nbsp;lista<br>
+de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;si&nbsp;alguna&nbsp;entidad&nbsp;no&nbsp;tiene&nbsp;un&nbsp;nombre&nbsp;correcto&nbsp;o&nbsp;no&nbsp;existe&nbsp;en&nbsp;el&nbsp;modelo.<br>
+-&nbsp;si&nbsp;se&nbsp;está&nbsp;haciendo&nbsp;una&nbsp;JOIN&nbsp;entre&nbsp;2&nbsp;entidades&nbsp;del&nbsp;modelo&nbsp;NO&nbsp;relacionadas.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkWrongEntities"><strong>checkWrongEntities</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;realiza&nbsp;algunas&nbsp;validaciones&nbsp;sobre&nbsp;los&nbsp;filtros&nbsp;de&nbsp;tipo&nbsp;entidad.campo.&nbsp;Devuelve&nbsp;una&nbsp;lista<br>
+de&nbsp;warnings&nbsp;si:<br>
+&nbsp;<br>
+-&nbsp;si&nbsp;alguna&nbsp;entidad&nbsp;no&nbsp;tiene&nbsp;un&nbsp;nombre&nbsp;correcto&nbsp;o&nbsp;no&nbsp;existe&nbsp;en&nbsp;el&nbsp;modelo.<br>
+-&nbsp;si&nbsp;un&nbsp;campo&nbsp;no&nbsp;es&nbsp;de&nbsp;la&nbsp;entidad.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-checkWrongTypesInPojos"><strong>checkWrongTypesInPojos</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;con&nbsp;<br>
+atributos&nbsp;de&nbsp;los&nbsp;POJOS&nbsp;que&nbsp;pueden&nbsp;tener&nbsp;un&nbsp;tipo&nbsp;incorrecto.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-extractEntitiesFromJoins"><strong>extractEntitiesFromJoins</strong></a>(self, dtdDoc)</dt><dd><tt>Método&nbsp;que&nbsp;recibe&nbsp;un&nbsp;texto&nbsp;Documentacion&nbsp;DTD&nbsp;y&nbsp;busca&nbsp;el&nbsp;patrón&nbsp;entidad1&nbsp;JOIN&nbsp;entidad2&nbsp;en&nbsp;filtros<br>
+devolviendo&nbsp;una&nbsp;lista&nbsp;de&nbsp;los&nbsp;fragmentos&nbsp;que&nbsp;satisfagan&nbsp;el&nbsp;patrón.<br>
+&nbsp;<br>
+Ejemplo:&nbsp;devuelve&nbsp;['ResppResourceSpec',&nbsp;'INNER',&nbsp;'JOIN',&nbsp;'RespvResourceSpec']</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-extractPosEntity"><strong>extractPosEntity</strong></a>(self, string)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;la&nbsp;posicion&nbsp;de&nbsp;una&nbsp;entidad&nbsp;relacionada.<br>
+&nbsp;<br>
+A&nbsp;partir&nbsp;de&nbsp;la&nbsp;cadena&nbsp;//@entityModels.0/@entities.585"&nbsp;se&nbsp;obtiene&nbsp;el&nbsp;585</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-extractPosPojo"><strong>extractPosPojo</strong></a>(self, pojoString)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;la&nbsp;posicion&nbsp;que&nbsp;ocupa&nbsp;un&nbsp;dto&nbsp;a&nbsp;partir&nbsp;de&nbsp;una&nbsp;cadena&nbsp;de&nbsp;texto.<br>
+&nbsp;<br>
+Para:&nbsp;"//@dtoModel/@dtos.33"&nbsp;se&nbsp;devuelve&nbsp;el&nbsp;entero&nbsp;33</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-findEntitiesAndFieldsInDTDDoc"><strong>findEntitiesAndFieldsInDTDDoc</strong></a>(self, dtdDoc)</dt><dd><tt>Método&nbsp;que&nbsp;recibe&nbsp;un&nbsp;texto&nbsp;Documentacion&nbsp;DTD&nbsp;y&nbsp;busca&nbsp;el&nbsp;patrón&nbsp;entidad.campo&nbsp;en&nbsp;filtros<br>
+devolviendo&nbsp;una&nbsp;lista&nbsp;de&nbsp;los&nbsp;fragmentos&nbsp;que&nbsp;satisfagan&nbsp;el&nbsp;patrón.<br>
+&nbsp;<br>
+Nota:&nbsp;Se&nbsp;capitaliza&nbsp;la&nbsp;inicial&nbsp;de&nbsp;la&nbsp;entidad</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-generateReport"><strong>generateReport</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;invoca&nbsp;a&nbsp;las&nbsp;funciones&nbsp;de&nbsp;validación,&nbsp;captura&nbsp;los&nbsp;warnings&nbsp;y&nbsp;los&nbsp;vuelca&nbsp;en&nbsp;un&nbsp;informe&nbsp;txt.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-getAttributesFromEntity"><strong>getAttributesFromEntity</strong></a>(self, entity)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;conteniendo&nbsp;los&nbsp;nombres<br>
+de&nbsp;los&nbsp;atributos&nbsp;de&nbsp;una&nbsp;entidad&nbsp;del&nbsp;modelo&nbsp;dada.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-getDAOName"><strong>getDAOName</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;el&nbsp;nombre&nbsp;del&nbsp;modelo&nbsp;cargado.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-getEntityNameByPos"><strong>getEntityNameByPos</strong></a>(self, index)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;el&nbsp;nombre&nbsp;de&nbsp;la&nbsp;entidad&nbsp;del&nbsp;modelo<br>
+que&nbsp;ocupa&nbsp;una&nbsp;posición&nbsp;dada&nbsp;(index).<br>
+&nbsp;<br>
+@entities.33&nbsp;-&gt;&nbsp;Aqui&nbsp;se&nbsp;buscaría&nbsp;obtener&nbsp;el&nbsp;nombre&nbsp;de&nbsp;la&nbsp;entidad&nbsp;con&nbsp;pos&nbsp;33.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-getEntityNames"><strong>getEntityNames</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;la&nbsp;lista&nbsp;de&nbsp;nombres&nbsp;de&nbsp;entidades&nbsp;del&nbsp;modelo&nbsp;que&nbsp;se&nbsp;ha&nbsp;cargado.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-getRelationshipsFromEntity"><strong>getRelationshipsFromEntity</strong></a>(self, entity)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;con&nbsp;los&nbsp;nombres&nbsp;de&nbsp;las<br>
+entidades&nbsp;que&nbsp;se&nbsp;relacionan&nbsp;con&nbsp;la&nbsp;entidad&nbsp;dada.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-loadEntitiesAttributes"><strong>loadEntitiesAttributes</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;crea&nbsp;y&nbsp;devuelve&nbsp;un&nbsp;diccionario:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;key:&nbsp;cada&nbsp;una&nbsp;de&nbsp;las&nbsp;entidades&nbsp;del&nbsp;modelo<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;value:&nbsp;lista&nbsp;de&nbsp;atributos&nbsp;de&nbsp;la&nbsp;entidad</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-loadEntitiesRelationships"><strong>loadEntitiesRelationships</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;crea&nbsp;y&nbsp;devuelve&nbsp;un&nbsp;diccionario:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;key:&nbsp;cada&nbsp;una&nbsp;de&nbsp;las&nbsp;entidades&nbsp;del&nbsp;modelo<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;value:&nbsp;lista&nbsp;con&nbsp;los&nbsp;nombres&nbsp;de&nbsp;las&nbsp;entidades<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;relacionadas&nbsp;de&nbsp;la&nbsp;entidad&nbsp;key</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-loadEntityNamesInList"><strong>loadEntityNamesInList</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;crea&nbsp;y&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;conteniendo<br>
+el&nbsp;nombre&nbsp;(entityName)&nbsp;de&nbsp;cada&nbsp;entidad&nbsp;del&nbsp;modelo.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-searchOrphanPojos"><strong>searchOrphanPojos</strong></a>(self)</dt><dd><tt>Método&nbsp;que&nbsp;devuelve&nbsp;una&nbsp;lista&nbsp;de&nbsp;warnings&nbsp;con&nbsp;<br>
+los&nbsp;POJOS&nbsp;que&nbsp;no&nbsp;se&nbsp;están&nbsp;devolviendo&nbsp;en&nbsp;ninguna&nbsp;query&nbsp;del&nbsp;modelo.</tt></dd></dl>
+
+<dl><dt><a name="XMIValidator-searchWordInText"><strong>searchWordInText</strong></a>(self, word, text)</dt><dd><tt>Método&nbsp;que&nbsp;busca&nbsp;una&nbsp;cadena&nbsp;en&nbsp;un&nbsp;texto&nbsp;y&nbsp;<br>
+devuelve&nbsp;True&nbsp;si&nbsp;existe&nbsp;y&nbsp;False&nbsp;en&nbsp;caso&nbsp;contrario.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+
+<tr bgcolor="#55aa55">
+
+<td colspan=3 valign=bottom>&nbsp;<br>
+
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+
+    
+
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>EMPTY_NAMESPACE</strong> = None<br>
+<strong>EMPTY_PREFIX</strong> = None<br>
+<strong>StringTypes</strong> = (&lt;class 'str'&gt;,)<br>
+<strong>XMLNS_NAMESPACE</strong> = 'http://www.w3.org/2000/xmlns/'</td></tr></table>
+
+</body></html>

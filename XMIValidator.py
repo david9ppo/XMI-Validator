@@ -1,16 +1,27 @@
 import sys, re
 from xml.dom.minidom import *
 
+"""
+Script que realiza validaciones sobre uno o más ficheros dao-XXX.xmi. Como resultado, se genera para cada uno de los ficheros
+xmi de entrada un informe .txt.
+"""
+
 class XMIValidator:
-	"""docstring for ClassName"""
+	"""
+	Clase que recibe y parsea el xmi y realiza validaciones para generar un informe con el resultado de estas.
+	"""
 	def __init__(self, xmi):
 		self.dom = parse(xmi)
 		self.entNames=self.loadEntityNamesInList()
 		self.attrEntModel=self.loadEntitiesAttributes()
 		self.relEntModel=self.loadEntitiesRelationships()
 
-
 	def loadEntitiesAttributes(self):
+		"""
+        Método que crea y devuelve un diccionario:
+            	- key: cada una de las entidades del modelo
+            	- value: lista de atributos de la entidad
+    	"""
 		entDict={}
 		entities = self.dom.getElementsByTagName("entities")
 		for entity in entities:
@@ -18,30 +29,59 @@ class XMIValidator:
 		return entDict
 
 	def loadEntityNamesInList(self):
+		"""
+        Método que crea y devuelve una lista conteniendo
+        el nombre (entityName) de cada entidad del modelo.
+    	"""
 		names=[]
 		entities = self.dom.getElementsByTagName("entities")
 		for entity in entities:
 			names.append(entity.getAttribute("entityName"))
 		return names
 
-	def getEntityNameByPos(self, index):
-		return self.entNames[index]
-
-	def getEntityNames(self):
-		return self.entNames
-
 	def loadEntitiesRelationships(self):
+		"""
+        Método que crea y devuelve un diccionario:
+            	- key: cada una de las entidades del modelo
+            	- value: lista con los nombres de las entidades
+            			 relacionadas de la entidad key
+    	"""
 		entDict={}
 		entities = self.dom.getElementsByTagName("entities")
 		for entity in entities:
 			entDict[entity.getAttribute("entityName")]=self.getRelationshipsFromEntity(entity)
 		return entDict
 
+	def getEntityNameByPos(self, index):
+		"""
+        Método que devuelve el nombre de la entidad del modelo
+        que ocupa una posición dada (index).
+
+        @entities.33 -> Aqui se buscaría obtener el nombre de la entidad con pos 33.
+
+    	"""
+		return self.entNames[index]
+
+	def getEntityNames(self):
+		"""
+        Método que devuelve la lista de nombres de entidades del modelo que se ha cargado.
+    	"""
+		return self.entNames
+
 	def extractPosPojo(self, pojoString):
+		"""
+        Método que devuelve la posicion que ocupa un dto a partir de una cadena de texto.
+
+        Para: "//@dtoModel/@dtos.33" se devuelve el entero 33
+    	"""
 		return int(re.findall("[0-9]+", pojoString)[0])
 
 	def searchOrphanPojos(self):
-		errors=[]
+		"""
+        Método que devuelve una lista de warnings con 
+        los POJOS que no se están devolviendo en ninguna query del modelo.
+    	"""
+		warnings=[]
 		nameDtos=[]
 		dtos=self.dom.getElementsByTagName("dtos")
 		numDtos=len(dtos)
@@ -63,11 +103,15 @@ class XMIValidator:
 				inusabled.append(idx)
 		#sacar nombre de los no usados
 		for p in inusabled:
-			errors.append(nameDtos[p]+' con posicion @dtos.'+str(p))
-		return errors
+			warnings.append(nameDtos[p]+' con posicion @dtos.'+str(p))
+		return warnings
 
 	def checkWrongTypesInPojos(self):
-		errors=[]
+		"""
+        Método que devuelve una lista de warnings con 
+        atributos de los POJOS que pueden tener un tipo incorrecto.
+    	"""
+		warnings=[]
 		dtos=self.dom.getElementsByTagName("dtos")
 		for dto in dtos:
 			attributes=dto.getElementsByTagName("attribtesDTOs")
@@ -80,26 +124,33 @@ class XMIValidator:
 						#añadir error
 						if(type==""):
 							type="String"
-						errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Long. Es de tipo "+type+" .¿Es correcto?")
+						warnings.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Long. Es de tipo "+type+" .¿Es correcto?")
 				elif(self.searchWordInText("name",name) or self.searchWordInText("Name",name) or self.searchWordInText("Na",name)):
 					if(not type==""):
 						#añadir error
-						errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo String.")
+						warnings.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo String.")
 				elif(self.searchWordInText("descrip",name) or self.searchWordInText("Ds",name)):
 					if(not type==""):
 						#añadir error
-						errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo String.")
+						warnings.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo String.")
 				elif(self.searchWordInText("date",name) or self.searchWordInText("Date",name)):
 					if(not(self.searchWordInText("Date",type))):
 						#añadir error
-						errors.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Date.")
-		return errors
+						warnings.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Date.")
+		return warnings
 
 	def getDAOName(self):
+		"""
+        Método que devuelve el nombre del modelo cargado.
+    	"""
 		model=self.dom.getElementsByTagName("geniee:Model")
 		return model[0].getAttribute("modelName")
 
 	def getAttributesFromEntity(self,entity):
+		"""
+        Método que devuelve una lista conteniendo los nombres
+        de los atributos de una entidad del modelo dada.
+    	"""
 		attrList=[]
 		attributes=entity.getElementsByTagName("attributes")
 		for at in attributes:
@@ -107,9 +158,18 @@ class XMIValidator:
 		return attrList
 
 	def extractPosEntity(self, string):
+		"""
+        Método que devuelve la posicion de una entidad relacionada.
+
+        A partir de la cadena //@entityModels.0/@entities.585" se obtiene el 585
+    	"""
 		return re.search('@entities.[0-9]+', string).group(0).split(".")[1]
 
 	def getRelationshipsFromEntity(self,entity):
+		"""
+        Método que devuelve una lista con los nombres de las
+        entidades que se relacionan con la entidad dada.
+    	"""
 		relList=[]
 		rels=entity.getElementsByTagName("relationships")
 		for r in rels:
@@ -119,7 +179,11 @@ class XMIValidator:
 		return relList
 
 	def checkDuplicatedRepositories(self):
-		errors=[]
+		"""
+        Método que devuelve una lista de warnings con los nombres
+        de los repositorios repetidos en el modelo, si los hay.
+    	"""
+		warnings=[]
 		repoSet = set()
 		repos = self.dom.getElementsByTagName("repositories")
 		#cargar primer repo
@@ -127,31 +191,43 @@ class XMIValidator:
 		self.checkDuplicatedQueriesInRepo(repos[0])
 		for repo in repos[1:]:
 			if repo.getAttribute("repositoryName") in repoSet:
-				errors.append('Repositorio repetido: '+repo.getAttribute("repositoryName"))
+				warnings.append('Repositorio repetido: '+repo.getAttribute("repositoryName"))
 			else:
 				self.checkDuplicatedQueriesInRepo(repo)
 				repoSet.add(repo.getAttribute("repositoryName"))
-		return errors
+		return warnings
 		
 	def checkDuplicatedQueriesInRepo(self,repo):
-		errors=[]
+		"""
+        Método que devuelve una lista de warnings con los nombres
+        de las queries repetidas en un repositorio dado, si se da el caso.
+
+        Tambien comprueba que no existan repositorios sin queries definidas.
+    	"""
+		warnings=[]
 		qSet=set()
 		queries=repo.getElementsByTagName("queries")
 		#Comprobar que al menos tiene un metodo
 		if len(queries) <1:
-			errors.append('El repositorio '+repo.getAttribute("repositoryName")+' no tiene queries definidas')
+			warnings.append('El repositorio '+repo.getAttribute("repositoryName")+' no tiene queries definidas')
 		else:
 			#cargar primera query
 			qSet.add(queries[0].getAttribute("queryName"))
 			for q in queries[1:]:
 				if q.getAttribute("queryName") in qSet:
-					errors.append('Metodo '+q.getAttribute("queryName")+' duplicado en repositorio '+repo.getAttribute("repositoryName"))
+					warnings.append('Metodo '+q.getAttribute("queryName")+' duplicado en repositorio '+repo.getAttribute("repositoryName"))
 				else:
 					qSet.add(q.getAttribute("queryName"))
-		return errors
+		return warnings
 
 	def checkRuleMethods(self):
-		errors=[]
+		"""
+        Método que analiza metodos de recuperacion de Reglas y devuelve una lista de warnings si:
+
+        - no tiene como parametro de entrada un ruleEvent
+        - no devuelve parametro de salida de tipo BigDecimal
+    	"""
+		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			if(q.getAttribute("queryName").find("Rule") > -1):
@@ -162,14 +238,20 @@ class XMIValidator:
 					if(param.getAttribute("parameterName").find("Event")> -1 or param.getAttribute("parameterName").find("event")> -1):
 						cont+=1
 				if cont!=1:
-					errors.append('Metodo de reglas '+q.getAttribute("queryName")+' no tiene parametro de entrada ruleEvent')
+					warnings.append('Metodo de reglas '+q.getAttribute("queryName")+' no tiene parametro de entrada ruleEvent')
 				retType=q.getElementsByTagName("return")
 				if(retType[0].getAttribute("type").find("BigDecimal")==-1):
-					errors.append('Metodo de reglas '+q.getAttribute("queryName")+' no devuelve parámetro de tipo BigDecimal')
-		return errors
+					warnings.append('Metodo de reglas '+q.getAttribute("queryName")+' no devuelve parámetro de tipo BigDecimal')
+		return warnings
 
 	def checkCatTextMethods(self):
-		errors=[]
+		"""
+        Método que analiza metodos de recuperacion de CatalogText y devuelve una lista de warnings si:
+
+        - no recibe como parametros de entrada los 3 filtros (textType, textUse y publishMedia)
+        - alguno de ellos no es de tipo Long
+    	"""
+		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			if(q.getAttribute("queryName").find("getCatalogText") > -1 or q.getAttribute("queryName").find("findCatalogText") > -1):
@@ -182,25 +264,31 @@ class XMIValidator:
 						# #validar tipo
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro CatText no es Long
-							errors.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
+							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
 					elif(param.getAttribute("parameterName").lower().find("type")> -1):
 						filters.add("type")
 						#validarTipo
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro CatText no es Long
-							errors.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
+							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
 					elif(param.getAttribute("parameterName").lower().find("media")> -1):
 						filters.add("media")
 						#validarTipo
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro CatText no es Long
-							errors.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
+							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
 				if(len(filters)!=3):
-					errors.append('Falta al menos uno de los 3 filtros del CatalogText como parámetros de entrada en el metodo '+q.getAttribute("queryName"))
-		return errors
+					warnings.append('Falta al menos uno de los 3 filtros del CatalogText como parámetros de entrada en el metodo '+q.getAttribute("queryName"))
+		return warnings
 
 	def checkParametersType(self):
-		errors=[]
+		"""
+        Método que busca tipos incorrectos en parametros de entrada y devuelve una lista de warnings si:
+
+        - algun parametro id no es de tipo Long
+        - algun parametro queryDate no es de tipo Date
+    	"""
+		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			p=q.getElementsByTagName("parameters")
@@ -210,36 +298,51 @@ class XMIValidator:
 					if(typ.find("Long")==-1):
 						if(typ==""):
 							typ="String"
-						errors.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long. Es de tipo '+typ+'. ¿Es correcto?')
+						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long. Es de tipo '+typ+'.¿Es correcto?')
 				elif(param.getAttribute("parameterName").find("queryDate")> -1 or param.getAttribute("parameterName").find("Date")> -1):
 					typ=param.getAttribute("type")
 					if(typ.find("Date")==-1):
 						if(typ==""):
 							typ="String"
-						errors.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date. Es de tipo '+typ+'. ¿Es correcto?')
+						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date. Es de tipo '+typ+'.¿Es correcto?')
 
-		return errors
+		return warnings
 
 	def checkDTDDocumentation(self):
-		errors=[]
+		"""
+        Método que devuelve una lista de warnings si:
+
+        - alguna query no tiene relleno el campo Documentacion DTD
+    	"""
+		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			p=q.getAttribute("dtdDocumentation")
 			if(p==""):
-				errors.append(q.getAttribute("queryName"))
-		return errors
+				warnings.append(q.getAttribute("queryName"))
+		return warnings
 
 	def findEntitiesAndFieldsInDTDDoc(self,dtdDoc):
-		# l=[]
-		# dtdDoc="\n".join(dtdDoc.splitlines())
+		"""
+        Método que recibe un texto Documentacion DTD y busca el patrón entidad.campo en filtros
+        devolviendo una lista de los fragmentos que satisfagan el patrón.
+
+        Nota: Se capitaliza la inicial de la entidad
+    	"""
 		entAndFields=re.findall("[a-zA-Z]{12,}"'\.'"[a-zA-Z]+", dtdDoc)
 		out=[]
 		for eF in entAndFields:
-			capiteF=eF[0].upper()+eF[1:]
+			capiteF=eF[0].upper()+eF[1:] #las entidades del modelo empiezan todos con mayuscula
 			out.append(capiteF)
 		return out
 
 	def extractEntitiesFromJoins(self,dtdDoc):
+		"""
+        Método que recibe un texto Documentacion DTD y busca el patrón entidad1 JOIN entidad2 en filtros
+        devolviendo una lista de los fragmentos que satisfagan el patrón.
+
+        Ejemplo: devuelve ['ResppResourceSpec', 'INNER', 'JOIN', 'RespvResourceSpec']
+    	"""
 		lista=[]
 		#extraer INNER JOINS
 		cadena=re.findall('[a-zA-Z]{12,} +INNER +JOIN +[a-zA-Z]+', dtdDoc)
@@ -256,6 +359,13 @@ class XMIValidator:
 		return lista
 
 	def checkValidityEntitiesJoins(self):
+		"""
+        Método que realiza algunas validaciones sobre las JOINS escritas. Devuelve una lista
+        de warnings si:
+
+        - si alguna entidad no tiene un nombre correcto o no existe en el modelo.
+        - si se está haciendo una JOIN entre 2 entidades del modelo NO relacionadas.
+    	"""
 		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
@@ -264,12 +374,13 @@ class XMIValidator:
 			for j in joins: # entIzq INNER JOIN entDer o entIzq LEFT JOIN entDer o entIzq y entDer
 				entIzq=j[0]
 				entDer=j[-1]
-				if(entIzq not in self.attrEntModel):
-					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzq+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-				if(entDer not in self.attrEntModel):
-					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDer+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 				entIzqNew=entIzq[0].upper()+entIzq[1:]
 				entDerNew=entDer[0].upper()+entDer[1:]
+				if(entIzqNew not in self.attrEntModel):
+					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+				if(entDerNew not in self.attrEntModel):
+					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+				
 				# verifica si es posible por modelo la JOIN entre entIzq y entDer
 				# print(entDer)
 				# si existe la entDerNew, miro si se puede hacer la JOIN
@@ -279,7 +390,14 @@ class XMIValidator:
 			return warnings
 
 	def checkWrongEntities(self):
-		errors=set()
+		"""
+        Método que realiza algunas validaciones sobre los filtros de tipo entidad.campo. Devuelve una lista
+        de warnings si:
+
+        - si alguna entidad no tiene un nombre correcto o no existe en el modelo.
+        - si un campo no es de la entidad.
+    	"""
+		warnings=set()
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			dtdDoc=q.getAttribute("dtdDocumentation")
@@ -287,13 +405,13 @@ class XMIValidator:
 			for filtro in entFields:
 				entidad=filtro.split(".")[0]
 				campo=filtro.split(".")[1]
-				campo=campo[0].lower()+campo[1:]
+				campo=campo[0].lower()+campo[1:] #los atributos en el modelo empiezan todos con minuscula
 				#comprobar que la entidad existe
 				if(entidad not in self.attrEntModel):
-					 errors.add('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
+					 warnings.add('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
 				else: #entidad existe, comprobar que el campo es de esa entidad
 					if(campo not in self.attrEntModel[entidad]):
-						errors.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
+						warnings.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
 
 			# 	# indexesINNER = [i for i,x in enumerate(l) if x == "INNER"]
 			# 	# for ind in indexesINNER:
@@ -303,16 +421,27 @@ class XMIValidator:
 			# 	# for ind in indexesJOIN:
 			# 		# if(len(l[ind+1])>5):
 			# 			# print(l[ind+1])
-		return sorted(errors)
+		return sorted(warnings)
 
 	def searchWordInText(self,word, text):
+		"""
+        Método que busca una cadena en un texto y 
+        devuelve True si existe y False en caso contrario.
+    	"""
 		results=re.findall(word, text)
 		if(results==[]):
 			return False
 		return True
 
 	def checkKeywordsInDoc(self):
-		errors=[]
+		"""
+        Método que realiza algunas validaciones entre los parametros y la documentacion de la consulta. Devuelve una lista
+        de warnings si:
+
+        - si se hace referencia a un queryDate que NO aparece como parametro de entrada.
+        - si aparece la palabra "lista" y NO se devuelve una Colecction
+    	"""
+		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
 		for q in queries:
 			qDateKW=False
@@ -335,15 +464,18 @@ class XMIValidator:
 					if(p.getAttribute("parameterName").find("queryDate")> -1 or p.getAttribute("parameterName").find("Date")> -1 or p.getAttribute("parameterName").find("querydate")> -1):
 						paramQueryDate=True
 				if(not paramQueryDate): ##queryDate en doc pero no como parametro
-					errors.append('En la DOC del metodo '+q.getAttribute("queryName")+' se hace referencia a un queryDate que no aparece como parámetro de entrada')
+					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' se hace referencia a un queryDate que no aparece como parámetro de entrada')
 			#Comprobar lista en DOC y que devuelva Colecction or Collection
 			if(listaKW):
 				retType=q.getElementsByTagName("return")
 				if(not self.searchWordInText("Colecction",retType[0].getAttribute("xsi:type")) and not self.searchWordInText("Collection",retType[0].getAttribute("xsi:type"))):
-					errors.append('En la DOC del metodo '+q.getAttribute("queryName")+' aparece "lista" y el metodo no devuelve una lista de elementos')
-		return errors
+					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' aparece "lista" y el metodo no devuelve una lista de elementos')
+		return warnings
 
-	def solve(self):
+	def generateReport(self):
+		"""
+		Método que invoca a las funciones de validación, captura los warnings y los vuelca en un informe txt.
+		"""
 		name=self.getDAOName()
 		f = open('Informe_'+name+'.txt', 'w')
 		f.write('**********************************************************'+'\n')
@@ -351,85 +483,85 @@ class XMIValidator:
 		f.write('**********************************************************'+'\n\n')
 		f.write("Chequeando repositorios y metodos duplicados..."+'\n')
 		f.write("==============================================="+'\n')
-		e=self.checkDuplicatedRepositories()
-		if(e==[]):
+		w=self.checkDuplicatedRepositories()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Chequeando parametros en metodos de reglas..."+'\n')
 		f.write("============================================="+'\n')
-		e=self.checkRuleMethods()
-		if(e==[]):
+		w=self.checkRuleMethods()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Chequeando tipos de parametros..."+'\n')
 		f.write("================================="+'\n')
-		e=self.checkParametersType()
-		if(e==[]):
+		w=self.checkParametersType()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Chequeando metodos sin Documentacion..."+'\n')
 		f.write("======================================="+'\n')
-		e=self.checkDTDDocumentation()
-		if(e==[]):
+		w=self.checkDTDDocumentation()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Chequeando entidad.campo en las consultas..."+'\n')
 		f.write("======================================="+'\n')
-		e=self.checkWrongEntities()
-		if(len(e)==0):
+		w=self.checkWrongEntities()
+		if(len(w)==0):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Chequeando metodos CatalogText..."+'\n')
 		f.write("======================================="+'\n')
-		e=self.checkCatTextMethods()
-		if(e==[]):
+		w=self.checkCatTextMethods()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Chequeando filtros en la DOC que no aparecen como parámetros de entrada..."+'\n')
 		f.write("======================================="+'\n')
-		e=self.checkKeywordsInDoc()
-		if(e==[]):
+		w=self.checkKeywordsInDoc()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"POJOS no devueltos en ningun metodo:"+'\n')
 		f.write("======================================="+'\n')
-		e=self.searchOrphanPojos()
-		if(e==[]):
+		w=self.searchOrphanPojos()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Comprobando tipos en atributos de los POJOS..."+'\n')
 		f.write("======================================="+'\n')
-		e=self.checkWrongTypesInPojos()
-		if(e==[]):
+		w=self.checkWrongTypesInPojos()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
+			for warning in w:
+				f.write(warning+'\n')
 		f.write('\n\n'+"Comprobando validez de las JOINS..."+'\n')
 		f.write("======================================="+'\n')
-		e=self.checkValidityEntitiesJoins()
-		if(e==[]):
+		w=self.checkValidityEntitiesJoins()
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
-			for error in e:
-				f.write(error+'\n')
-		print("Validacion acabada")
+			for warning in w:
+				f.write(warning+'\n')
+		print("XMI validado. Consulta el informe generado.")
 		f.close()
 
 
@@ -439,4 +571,4 @@ else:
 	for doc in sys.argv[1:]:
 		if not doc.endswith('.xmi'):
 			raise ValueError('El parámetro no es un fichero XMI')
-		a=XMIValidator(doc).solve()
+		a=XMIValidator(doc).generateReport()
