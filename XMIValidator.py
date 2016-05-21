@@ -188,12 +188,16 @@ class XMIValidator:
 		repos = self.dom.getElementsByTagName("repositories")
 		#cargar primer repo
 		repoSet.add(repos[0].getAttribute("repositoryName"))
-		self.checkDuplicatedQueriesInRepo(repos[0])
+		warn=self.checkDuplicatedQueriesInRepo(repos[0])
+		for w in warn:
+			warnings.append(w)
 		for repo in repos[1:]:
 			if repo.getAttribute("repositoryName") in repoSet:
 				warnings.append('Repositorio repetido: '+repo.getAttribute("repositoryName"))
 			else:
-				self.checkDuplicatedQueriesInRepo(repo)
+				warn=self.checkDuplicatedQueriesInRepo(repo)
+				for w in warn:
+					warnings.append(w)
 				repoSet.add(repo.getAttribute("repositoryName"))
 		return warnings
 		
@@ -386,8 +390,8 @@ class XMIValidator:
 				# si existe la entDerNew, miro si se puede hacer la JOIN
 				if(entDerNew in self.relEntModel.keys()):
 				 	if(entIzqNew not in self.relEntModel[entDerNew]):
-				 		warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzq+' y '+entDer+' .')
-			return warnings
+				 		warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+' .')
+		return warnings
 
 	def checkWrongEntities(self):
 		"""
@@ -561,7 +565,7 @@ class XMIValidator:
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		print("XMI validado. Consulta el informe generado.")
+		print("Ha terminado la validacion. Consulta el informe generado.")
 		f.close()
 
 
