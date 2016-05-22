@@ -360,10 +360,9 @@ class XMIValidator:
 		cadena=re.findall('[a-zA-Z]{12,} +y +[a-zA-Z]{12,}', dtdDoc)
 		for c in cadena:
 			joinExp=re.sub('\s+',"#",c).split("#")
-			print(joinExp)
 			if(joinExp[0].find("Validity")==-1 and joinExp[-1].find("Validity")==-1): #evitar xxxValidity y xxxValidity
 				lista.append(joinExp)
-				
+
 		#extraer entidad1 as xxxx    y entidad2
 		cadena=re.findall('[a-zA-Z]{12,} +as +[a-zA-Z0-9]+ +y +[a-zA-Z]{12,}', dtdDoc)
 		for c in cadena:
@@ -617,7 +616,6 @@ class XMIValidator:
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		print("Ha terminado la validacion. Consulta el informe generado.")
 		f.close()
 
 
@@ -628,3 +626,4 @@ else:
 		if not doc.endswith('.xmi'):
 			raise ValueError('El parámetro no es un fichero XMI')
 		xmiVal=XMIValidator(doc).generateReport()
+	print("Ha terminado la validacion. Consulta los informes generados.")
