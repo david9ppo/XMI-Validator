@@ -124,7 +124,7 @@ class XMIValidator:
 						#añadir error
 						if(type==""):
 							type="String"
-						warnings.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Long. Es de tipo "+type+" .¿Es correcto?")
+						warnings.append("Atributo "+name+" del POJO "+dto.getAttribute("dtoName")+" no es de tipo Long. Es de tipo "+type+". ¿Es correcto?")
 				elif(self.searchWordInText("name",name) or self.searchWordInText("Name",name) or self.searchWordInText("Na",name)):
 					if(not type==""):
 						#añadir error
@@ -302,13 +302,13 @@ class XMIValidator:
 					if(typ.find("Long")==-1):
 						if(typ==""):
 							typ="String"
-						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long. Es de tipo '+typ+'.¿Es correcto?')
+						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long. Es de tipo '+typ+'. ¿Es correcto?')
 				elif(param.getAttribute("parameterName").find("queryDate")> -1 or param.getAttribute("parameterName").find("Date")> -1):
 					typ=param.getAttribute("type")
 					if(typ.find("Date")==-1):
 						if(typ==""):
 							typ="String"
-						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date. Es de tipo '+typ+'.¿Es correcto?')
+						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date. Es de tipo '+typ+'. ¿Es correcto?')
 
 		return warnings
 
@@ -384,21 +384,29 @@ class XMIValidator:
 			dtdDoc=q.getAttribute("dtdDocumentation")
 			joins=self.extractEntitiesFromJoins(dtdDoc)
 			for j in joins: # entIzq INNER JOIN entDer o entIzq LEFT JOIN entDer o entIzq y entDer
+				existBothEntities=True
 				entIzq=j[0]
 				entDer=j[-1]
 				entIzqNew=entIzq[0].upper()+entIzq[1:]
 				entDerNew=entDer[0].upper()+entDer[1:]
 				if(entIzqNew not in self.attrEntModel):
-					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+					existBothEntities=False
+					warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+					warnings.append(warn)
+					#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 				if(entDerNew not in self.attrEntModel):
-					 warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+					existBothEntities=False
+					warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+					warnings.append(warn)
+					#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 				
-				# verifica si es posible por modelo la JOIN entre entIzq y entDer
+				# verifica si es posible por modelo la JOIN entre entIzq y entDer SOLO SI EXISTEN AMBAS
 				# print(entDer)
-				# si existe la entDerNew, miro si se puede hacer la JOIN
-				if(entDerNew in self.relEntModel.keys()):
+				if(existBothEntities):
 				 	if(entIzqNew not in self.relEntModel[entDerNew]):
-				 		warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+				 		warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+				 		warnings.append(warn)
+				 		#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
 		return warnings
 
 	def checkWrongEntities(self):
@@ -420,19 +428,15 @@ class XMIValidator:
 				campo=campo[0].lower()+campo[1:] #los atributos en el modelo empiezan todos con minuscula
 				#comprobar que la entidad existe
 				if(entidad not in self.attrEntModel):
-					 warnings.add('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
+					warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
+					warnings.add(warn)
+					#warnings.add('Metodo: '+ q.getAttribute("queryName")+' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
 				else: #entidad existe, comprobar que el campo es de esa entidad
 					if(campo not in self.attrEntModel[entidad]):
-						warnings.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
+						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
+						warnings.add(warn)
+						#warnings.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
 
-			# 	# indexesINNER = [i for i,x in enumerate(l) if x == "INNER"]
-			# 	# for ind in indexesINNER:
-			# 		# if(len(l[ind-1])>5):
-			# 			# print(l[ind-1])
-			# 	# indexesJOIN = [i for i,x in enumerate(l) if x == "JOIN"]
-			# 	# for ind in indexesJOIN:
-			# 		# if(len(l[ind+1])>5):
-			# 			# print(l[ind+1])
 		return sorted(warnings)
 
 	def searchWordInText(self,word, text):
@@ -499,83 +503,109 @@ class XMIValidator:
 		"""
 		name=self.getDAOName()
 		f = open('Informe_'+name+'.txt', 'w')
-		f.write('**********************************************************'+'\n')
-		f.write('Validaciones del DAO '+self.getDAOName()+'\n')
-		f.write('**********************************************************'+'\n\n')
-		f.write("Chequeando repositorios y metodos duplicados..."+'\n')
-		f.write("==============================================="+'\n')
+		title='* Validaciones del DAO '+self.getDAOName()+' *'
+		f.write('*'*len(title)+'\n')
+		f.write(title+'\n')
+		f.write('*'*len(title)+'\n\n')
+
+		vr="Validando repositorios y metodos duplicados..."
+		f.write(vr+'\n')
+		f.write("="*len(vr)+'\n')
 		w=self.checkDuplicatedRepositories()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Chequeando parametros en metodos de reglas..."+'\n')
-		f.write("============================================="+'\n')
+		pr="Validando parametros en metodos de reglas..."
+		f.write('\n'+pr+'\n')
+		f.write("="*len(pr)+'\n')
 		w=self.checkRuleMethods()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Chequeando tipos de parametros..."+'\n')
-		f.write("================================="+'\n')
+		tp="Validando tipos de parametros de entrada..."
+		f.write('\n'+tp+'\n')
+		f.write("="*len(tp)+'\n')
 		w=self.checkParametersType()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Chequeando metodos sin Documentacion..."+'\n')
-		f.write("======================================="+'\n')
+
+		md="Validando metodos sin Documentacion..."
+		f.write('\n'+md+'\n')
+		f.write("="*len(md)+'\n')
+
 		w=self.checkDTDDocumentation()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Chequeando entidad.campo en las consultas..."+'\n')
-		f.write("======================================="+'\n')
+
+		fe="Validando filtros entidad.campo en las consultas..."
+		f.write('\n'+fe+'\n')
+		f.write("="*len(fe)+'\n')
+
 		w=self.checkWrongEntities()
 		if(len(w)==0):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Chequeando metodos CatalogText..."+'\n')
-		f.write("======================================="+'\n')
+
+		ec="Validando metodos CatalogText..."
+		f.write('\n'+ec+'\n')
+		f.write("="*len(ec)+'\n')
+
 		w=self.checkCatTextMethods()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Chequeando filtros en la DOC que no aparecen como parámetros de entrada..."+'\n')
-		f.write("======================================="+'\n')
+
+		ff="Validando filtros en la DOC que NO aparecen como parámetros de entrada..."
+		f.write('\n'+ff+'\n')
+		f.write("="*len(ff)+'\n')
+
 		w=self.checkKeywordsInDoc()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"POJOS no devueltos en ningun metodo:"+'\n')
-		f.write("======================================="+'\n')
+
+		po="Validando filtros en la DOC que NO aparecen como parámetros de entrada..."
+		f.write('\n'+po+'\n')
+		f.write("="*len(po)+'\n')
+		
 		w=self.searchOrphanPojos()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Comprobando tipos en atributos de los POJOS..."+'\n')
-		f.write("======================================="+'\n')
+
+		ti="Validando tipos en atributos de los POJOS..."
+		f.write('\n'+ti+'\n')
+		f.write("="*len(ti)+'\n')
+
 		w=self.checkWrongTypesInPojos()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
 				f.write(warning+'\n')
-		f.write('\n\n'+"Comprobando validez de las JOINS..."+'\n')
-		f.write("======================================="+'\n')
+
+		jo="Validando consultas JOINS..."
+		f.write('\n'+jo+'\n')
+		f.write("="*len(jo)+'\n')
+
 		w=self.checkValidityEntitiesJoins()
 		if(w==[]):
 			f.write("OK"+'\n')
