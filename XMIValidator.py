@@ -456,6 +456,7 @@ class XMIValidator:
 
         - si se hace referencia a un queryDate que NO aparece como parametro de entrada.
         - si aparece la palabra "lista" y NO se devuelve una Colecction
+        - si aparece id en la doc y NO aparece como parametro de entrada
     	"""
 		warnings=[]
 		queries=self.dom.getElementsByTagName("queries")
@@ -622,4 +623,4 @@ else:
 	for doc in sys.argv[1:]:
 		if not doc.endswith('.xmi'):
 			raise ValueError('El parámetro no es un fichero XMI')
-		a=XMIValidator(doc).generateReport()
+		xmiVal=XMIValidator(doc).generateReport()
