@@ -222,19 +222,29 @@ class XMIValidator:
     	"""
 		warnings=[]
 		qSet=set()
+		calcSet=set()
 		queries=repo.getElementsByTagName("queries")
 		calculadas=repo.getElementsByTagName("singleCalculate")
 		#Comprobar que al menos tiene un metodo
 		if(len(queries)+len(calculadas) <1):
 			warnings.append('El repositorio '+repo.getAttribute("repositoryName")+' no tiene queries definidas')
-		else:
-			#cargar primera query
-			qSet.add(queries[0].getAttribute("queryName"))
-			for q in queries[1:]:
-				if q.getAttribute("queryName") in qSet:
-					warnings.append('Metodo '+q.getAttribute("queryName")+' duplicado en repositorio '+repo.getAttribute("repositoryName"))
-				else:
-					qSet.add(q.getAttribute("queryName"))
+		else:#Al menos una query o funcion calculada
+			if(len(queries)>0):
+				#cargar primera query
+				qSet.add(queries[0].getAttribute("queryName"))
+				for q in queries[1:]:
+					if q.getAttribute("queryName") in qSet:
+						warnings.append('Metodo '+q.getAttribute("queryName")+' duplicado en repositorio '+repo.getAttribute("repositoryName"))
+					else:
+						qSet.add(q.getAttribute("queryName"))
+			if(len(calculadas)>0):
+				#cargar primera funcion calculada
+				calcSet.add(calculadas[0].getAttribute("queryName"))
+				for c in calculadas[1:]:
+					if c.getAttribute("queryName") in calcSet:
+						warnings.append('Funcion calculada '+c.getAttribute("queryName")+' duplicada en repositorio '+repo.getAttribute("repositoryName"))
+					else:
+						calcSet.add(c.getAttribute("queryName"))
 		return warnings
 
 	def checkRuleMethods(self):
