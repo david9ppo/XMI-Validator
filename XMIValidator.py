@@ -22,6 +22,11 @@ class XMIValidator:
 			list.append(key+':'+', '.join(self.attrEntModel[key]))
 		return list
 
+	def getEntitiesRelations(self):
+		list=[]
+		for key in self.attrEntModel.keys():
+			list.append(key+':'+', '.join(self.relEntModel[key]))
+		return list
 
 	def loadEntitiesAttributes(self):
 		"""
@@ -218,8 +223,9 @@ class XMIValidator:
 		warnings=[]
 		qSet=set()
 		queries=repo.getElementsByTagName("queries")
+		calculadas=repo.getElementsByTagName("singleCalculate")
 		#Comprobar que al menos tiene un metodo
-		if len(queries) <1:
+		if(len(queries)+len(calculadas) <1):
 			warnings.append('El repositorio '+repo.getAttribute("repositoryName")+' no tiene queries definidas')
 		else:
 			#cargar primera query
@@ -543,6 +549,22 @@ class XMIValidator:
 					csv.append(q.getAttribute("queryName")+'##ErrorEntreDocYParamentros##Se hace referencia a un id que no aparece como parámetro de entrada')
 		return warnings,csv
 
+	def generateCSVs(self):
+		fEntAttr=open('Entidades_Atributos.csv', 'w')
+		fEntAttr.write('Entidad:Atributos'+'\n')
+		fEntRel=open('Entidades_Relaciones.csv', 'w')
+		fEntRel.write('Entidad:Relaciones'+'\n')
+		# Sacar csv con entidad y campos del modelo
+		l=self.getEntitiesAttributes()
+		for valor in l:
+			fEntAttr.write(valor+'\n')
+		fEntAttr.close()
+		# Sacar csv con entidad y relaciones del modelo
+		l=self.getEntitiesRelations()
+		for valor in l:
+			fEntRel.write(valor+'\n')
+		fEntRel.close()
+
 	def generateReport(self):
 		"""
 		Método que invoca a las funciones de validación, captura los warnings y los vuelca en un informe txt.
@@ -551,8 +573,6 @@ class XMIValidator:
 		f = open('Informe_'+name+'.txt', 'w')
 		fCSV = open('CSV_'+name+'.csv', 'w')
 		fCSV.write('Metodo##Tipo error##Descripcion error'+'\n')
-		fEntAttr=open('Entidades_Atributos.csv', 'w')
-		fEntAttr.write('Entidad:Atributos'+'\n')
 		title='* Validaciones del DAO '+self.getDAOName()+' *'
 		f.write('*'*len(title)+'\n')
 		f.write(title+'\n')
@@ -678,18 +698,23 @@ class XMIValidator:
 				fCSV.write(csv+'\n')
 		f.close()
 		fCSV.close()
-		# Sacar csv con entidad y campos del modelo
-		l=self.getEntitiesAttributes()
-		for valor in l:
-			fEntAttr.write(valor+'\n')
-		fEntAttr.close()
+		
 
 
 if(len(sys.argv)<2):
 	raise ValueError('Se debe introducir al menos un fichero XMI para validar.')
 else:
-	for doc in sys.argv[1:]:
-		if not doc.endswith('.xmi'):
-			raise ValueError('El parámetro no es un fichero XMI')
-		xmiVal=XMIValidator(doc).generateReport()
-	print("Ha terminado la validacion. Consulta los informes generados.")
+	if(sys.argv[1]=="-p"):
+		for doc in sys.argv[2:]:
+			if not doc.endswith('.xmi'):
+				raise ValueError('El parámetro no es un fichero XMI')
+			xmiVal=XMIValidator(doc)
+			xmiVal.generateReport()
+			xmiVal.generateCSVs()
+		print("Ha terminado la validacion. Consulta los informes generados.")
+	else:
+		for doc in sys.argv[1:]:
+			if not doc.endswith('.xmi'):
+				raise ValueError('El parámetro no es un fichero XMI')
+			xmiVal=XMIValidator(doc).generateReport()
+		print("Ha terminado la validacion. Consulta los informes generados.")
