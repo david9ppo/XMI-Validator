@@ -430,37 +430,46 @@ class XMIValidator:
     	"""
 		warnings=[]
 		csv=[]
-		queries=self.dom.getElementsByTagName("queries")
-		for q in queries:
-			dtdDoc=q.getAttribute("dtdDocumentation")
-			joins=self.extractEntitiesFromJoins(dtdDoc)
-			for j in joins: # entIzq INNER JOIN entDer o entIzq LEFT JOIN entDer o entIzq y entDer
-				existBothEntities=True
-				entIzq=j[0]
-				entDer=j[-1]
-				entIzqNew=entIzq[0].upper()+entIzq[1:]
-				entDerNew=entDer[0].upper()+entDer[1:]
-				if(entIzqNew not in self.attrEntModel):
-					existBothEntities=False
-					warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-					warnings.append(warn)
-					csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'@Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-					#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-				if(entDerNew not in self.attrEntModel):
-					existBothEntities=False
-					warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-					warnings.append(warn)
-					csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'@Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-					#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
-				
-				# verifica si es posible por modelo la JOIN entre entIzq y entDer SOLO SI EXISTEN AMBAS
-				# print(entDer)
-				if(existBothEntities):
-				 	if(entIzqNew not in self.relEntModel[entDerNew]):
-				 		warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
-				 		warnings.append(warn)
-				 		csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
-				 		#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+		repos=self.dom.getElementsByTagName("repositories")
+		for repo in repos:
+			warnings.append("\nWarnings en metodos del repositorio "+repo.getAttribute("repositoryName")+'\n')
+			queries=repo.getElementsByTagName("queries")
+			for q in queries:
+				troubles=False
+				dtdDoc=q.getAttribute("dtdDocumentation")
+				joins=self.extractEntitiesFromJoins(dtdDoc)
+				for j in joins: # entIzq INNER JOIN entDer o entIzq LEFT JOIN entDer o entIzq y entDer
+					existBothEntities=True
+					entIzq=j[0]
+					entDer=j[-1]
+					entIzqNew=entIzq[0].upper()+entIzq[1:]
+					entDerNew=entDer[0].upper()+entDer[1:]
+					if(entIzqNew not in self.attrEntModel):
+						existBothEntities=False
+						troubles=True
+						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+						warnings.append(warn)
+						csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'@Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+						#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+					if(entDerNew not in self.attrEntModel):
+						troubles=True
+						existBothEntities=False
+						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+						warnings.append(warn)
+						csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'@Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+						#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+					
+					# verifica si es posible por modelo la JOIN entre entIzq y entDer SOLO SI EXISTEN AMBAS
+					# print(entDer)
+					if(existBothEntities):
+					 	if(entIzqNew not in self.relEntModel[entDerNew]):
+					 		troubles=True
+					 		warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+					 		warnings.append(warn)
+					 		csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+					 		#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+				if(troubles):
+					warnings.append("") #para linea en blanco y separar queries
 		return warnings,csv
 
 	def checkWrongEntities(self):
@@ -471,30 +480,37 @@ class XMIValidator:
         - si alguna entidad no tiene un nombre correcto o no existe en el modelo.
         - si un campo no es de la entidad.
     	"""
-		warnings=set()
-		csv=set()
-		queries=self.dom.getElementsByTagName("queries")
-		for q in queries:
-			dtdDoc=q.getAttribute("dtdDocumentation")
-			entFields=self.findEntitiesAndFieldsInDTDDoc(dtdDoc)
-			for filtro in entFields:
-				entidad=filtro.split(".")[0]
-				campo=filtro.split(".")[1]
-				campo=campo[0].lower()+campo[1:] #los atributos en el modelo empiezan todos con minuscula
-				#comprobar que la entidad existe
-				if(entidad not in self.attrEntModel):
-					warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
-					warnings.add(warn)
-					csv.add(q.getAttribute("queryName")+'##ErrorFiltroEntidad.Campo##'+'@Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo')
-					#warnings.add('Metodo: '+ q.getAttribute("queryName")+' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
-				else: #entidad existe, comprobar que el campo es de esa entidad
-					if(campo not in self.attrEntModel[entidad]):
-						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
-						warnings.add(warn)
-						csv.add(q.getAttribute("queryName")+'##ErrorFiltroEntidad.Campo##'+'Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo')
-						#warnings.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
-
-		return sorted(warnings), sorted(csv)
+		warnings=[]
+		csv=[]
+		repos=self.dom.getElementsByTagName("repositories")
+		for repo in repos:
+			warnings.append("\nWarnings en metodos del repositorio "+repo.getAttribute("repositoryName")+'\n')
+			queries=repo.getElementsByTagName("queries")
+			for q in queries:
+				troubles=False
+				dtdDoc=q.getAttribute("dtdDocumentation")
+				entFields=self.findEntitiesAndFieldsInDTDDoc(dtdDoc)
+				for filtro in entFields:
+					entidad=filtro.split(".")[0]
+					campo=filtro.split(".")[1]
+					campo=campo[0].lower()+campo[1:] #los atributos en el modelo empiezan todos con minuscula
+					#comprobar que la entidad existe
+					if(entidad not in self.attrEntModel):
+						troubles=True
+						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
+						warnings.append(warn)
+						csv.append(q.getAttribute("queryName")+'##ErrorFiltroEntidad.Campo##'+'@Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo')
+						#warnings.add('Metodo: '+ q.getAttribute("queryName")+' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
+					else: #entidad existe, comprobar que el campo es de esa entidad
+						if(campo not in self.attrEntModel[entidad]):
+							troubles=True
+							warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
+							warnings.append(warn) #linea en blanco para separar queries
+							csv.append(q.getAttribute("queryName")+'##ErrorFiltroEntidad.Campo##'+'Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo')
+							#warnings.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
+				if(troubles):
+					warnings.append("")#para linea en blanco y separar queries
+		return warnings, csv
 
 	def searchWordInText(self,word, text):
 		"""
@@ -638,7 +654,7 @@ class XMIValidator:
 		f.write("="*len(fe)+'\n')
 
 		w,c=self.checkWrongEntities()
-		if(len(w)==0):
+		if(w==[]):
 			f.write("OK"+'\n')
 		else:
 			for warning in w:
