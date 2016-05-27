@@ -1,5 +1,6 @@
 import sys, re
 from xml.dom.minidom import *
+from docx import Document
 
 """
 Script que realiza validaciones sobre uno o más ficheros dao-XXX.xmi. Como resultado, se genera para cada uno de los ficheros
@@ -590,6 +591,40 @@ class XMIValidator:
 					csv.append(q.getAttribute("queryName")+'##ErrorEntreDocYParamentros##Se hace referencia a un id que no aparece como parámetro de entrada')
 		return warnings,csv
 
+	def getTypePojoField(self,dto,field):
+		"""
+        Método que devuelve una lista de warnings con 
+        los POJOS que aparezcan duplicados.
+    	"""
+		
+		dtos=self.dom.getElementsByTagName("dtos")
+		for pojo in dtos:
+			if(pojo.getAttribute("dtoName")==dto):
+				attributes=pojo.getElementsByTagName("attribtesDTOs")
+				for attr in attributes:
+					if(attr.getAttribute("attributeName")==field):
+						return attr.getAttribute("type")
+
+	def getTypeEntityAttribute(self,entity,attrib):
+
+		entities=self.dom.getElementsByTagName("entities")
+		for e in entities:
+			if(e.getAttribute("entityName")==entity):
+				attributes=e.getElementsByTagName("attributes")
+				for at in attributes:
+					if(at.getAttribute("attributeName")==attrib):
+						return at.getAttribute("type")		
+
+	def readTable(self,docx):
+		document = Document('prueba.docx')
+		tabla=document.tables[0]
+		for row in tabla.rows[1:]:
+			celdas=row.cells # 0 pojo, 1 campo pojo, 2 entidad, 3 atributo entidad
+			t1=self.getTypePojoField(celdas[0].text,celdas[1].text)
+			t2=self.getTypeEntityAttribute(celdas[2].text,celdas[3].text)
+			print(t1,t2)
+
+
 	def generateCSVs(self):
 		fEntAttr=open('Entidades_Atributos.csv', 'w')
 		fEntAttr.write('Entidad:Atributos'+'\n')
@@ -764,6 +799,11 @@ else:
 			xmiVal.generateReport()
 			xmiVal.generateCSVs()
 		print("Ha terminado la validacion. Consulta los informes generados.")
+	elif(sys.argv[1]=="-c"):
+		doc=sys.argv[2]
+		xmiVal=XMIValidator(doc)
+		xmiVal.generateReport()
+		xmiVal.readTable(sys.argv[3])
 	else:
 		for doc in sys.argv[1:]:
 			if not doc.endswith('.xmi'):
