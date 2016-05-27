@@ -118,6 +118,21 @@ class XMIValidator:
 			warnings.append(nameDtos[p]+' con posicion @dtos.'+str(p))
 		return warnings
 
+	def checkDuplicatedPojos(self):
+		"""
+        Método que devuelve una lista de warnings con 
+        los POJOS que aparezcan duplicados.
+    	"""
+		warnings=[]
+		pojos=set()
+		dtos=self.dom.getElementsByTagName("dtos")
+		for pojo in dtos:
+			if(pojo.getAttribute("dtoName") not in pojos):
+				pojos.add(pojo.getAttribute("dtoName"))
+			else:
+				warnings.append('Pojo '+pojo.getAttribute("dtoName")+' repetido en el DAO.')
+		return warnings
+
 	def checkWrongTypesInPojos(self):
 		"""
         Método que devuelve una lista de warnings con 
@@ -613,6 +628,17 @@ class XMIValidator:
 		else:
 			for warning in w:
 				f.write(warning+'\n')
+
+		pr="Validando POJO's duplicados..."
+		f.write('\n'+pr+'\n')
+		f.write("="*len(pr)+'\n')
+		w=self.checkDuplicatedPojos()
+		if(w==[]):
+			f.write("OK"+'\n')
+		else:
+			for warning in w:
+				f.write(warning+'\n')
+
 		pr="Validando parametros en metodos de reglas..."
 		f.write('\n'+pr+'\n')
 		f.write("="*len(pr)+'\n')
