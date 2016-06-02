@@ -134,6 +134,10 @@ class XMIValidator:
 				warnings.append('Pojo '+pojo.getAttribute("dtoName")+' repetido en el DAO.')
 		return warnings
 
+	def getNumberOfPojos(self):
+		dtos=self.dom.getElementsByTagName("dtos")
+		return len(dtos)
+
 	def checkWrongTypesInPojos(self):
 		"""
         Método que devuelve una lista de warnings con 
@@ -618,9 +622,12 @@ class XMIValidator:
 		return type
 
 	def readTable(self,docx):
+		pojosInModel=self.getNumberOfPojos()
 		f = open('InformeMapeos.txt', 'w')
 		document = Document(docx)
 		tablas=document.tables
+		if(pojosInModel!=len(tablas)):
+			f.write('\n¡¡¡¡¡¡NO COINCIDE EL NUMERO DE POJOS EN EL MODELO CON EL NUMERO DE MAPEOS DEL DOCUMENTO!!!!!!\n')
 		for tabla in tablas:
 			rows=tabla.rows[1:]
 			mapeoName=rows[0].cells[0].text
