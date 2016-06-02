@@ -283,11 +283,11 @@ class XMIValidator:
 						cont+=1
 				if cont!=1:
 					warnings.append('Metodo de reglas '+q.getAttribute("queryName")+' no tiene parametro de entrada ruleEvent')
-					csv.append(q.getAttribute("queryName")+'##ErrorParametrosMetodoRules##No tiene parametro de entrada ruleEvent')
+					csv.append(q.getAttribute("queryName")+'#ErrorParametrosMetodoRules#No tiene parametro de entrada ruleEvent')
 				retType=q.getElementsByTagName("return")
 				if(retType[0].getAttribute("type").find("BigDecimal")==-1):
 					warnings.append('Metodo de reglas '+q.getAttribute("queryName")+' no devuelve parámetro de tipo BigDecimal')
-					csv.append(q.getAttribute("queryName")+'##ErrorParametrosMetodoRules##No devuelve parámetro de tipo BigDecimal')
+					csv.append(q.getAttribute("queryName")+'#ErrorParametrosMetodoRules#No devuelve parámetro de tipo BigDecimal')
 		return warnings, csv
 
 	def checkCatTextMethods(self):
@@ -313,34 +313,34 @@ class XMIValidator:
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro language no es Long
 							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
-							csv.append(q.getAttribute("queryName")+'##ErrorParametroMetodoCatalogText##'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
+							csv.append(q.getAttribute("queryName")+'#ErrorParametroMetodoCatalogText#'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
 					elif(param.getAttribute("parameterName").lower().find("use")> -1):
 						filters.add("use")
 						# #validar tipo
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro CatText no es Long
 							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
-							csv.append(q.getAttribute("queryName")+'##ErrorParametroMetodoCatalogText##'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
+							csv.append(q.getAttribute("queryName")+'#ErrorParametroMetodoCatalogText#'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
 					elif(param.getAttribute("parameterName").lower().find("type")> -1):
 						filters.add("type")
 						#validarTipo
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro CatText no es Long
 							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
-							csv.append(q.getAttribute("queryName")+'##ErrorParametroMetodoCatalogText##'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
+							csv.append(q.getAttribute("queryName")+'#ErrorParametroMetodoCatalogText#'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
 					elif(param.getAttribute("parameterName").lower().find("media")> -1):
 						filters.add("media")
 						#validarTipo
 						if(param.getAttribute("type").find("Long")==-1):
 							#error, filtro CatText no es Long
 							warnings.append('El parámetro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+' no es de tipo Long')
-							csv.append(q.getAttribute("queryName")+'##ErrorParametroMetodoCatalogText##'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
+							csv.append(q.getAttribute("queryName")+'#ErrorParametroMetodoCatalogText#'+'El parámetro '+param.getAttribute("parameterName")+' no es de tipo Long')
 				if(len(filters)!=3):
 					warnings.append('Falta al menos uno de los 3 filtros del CatalogText como parámetros de entrada en el metodo '+q.getAttribute("queryName"))
-					csv.append(q.getAttribute("queryName")+'##ErrorParametroMetodoCatalogText##Falta al menos uno de los 3 filtros del CatalogText como parámetros de entrada')
+					csv.append(q.getAttribute("queryName")+'#ErrorParametroMetodoCatalogText#Falta al menos uno de los 3 filtros del CatalogText como parámetros de entrada')
 				if(not langParam):
 					warnings.append('Falta el id del Language como parametro de entrada en el metodo '+q.getAttribute("queryName"))
-					csv.append(q.getAttribute("queryName")+'##ErrorParametroMetodoCatalogText##Falta el id del Language como parametro de entrada')
+					csv.append(q.getAttribute("queryName")+'#ErrorParametroMetodoCatalogText#Falta el id del Language como parametro de entrada')
 		return warnings,csv
 
 	def checkParametersType(self):
@@ -362,14 +362,14 @@ class XMIValidator:
 						if(typ==""):
 							typ="String"
 						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Long. Es de tipo '+typ+'. ¿Es correcto?')
-						csv.append(q.getAttribute("queryName")+'##ErrorTipoParametroEntrada##'+'Parametro '+param.getAttribute("parameterName")+' no es de tipo Long. Es de tipo '+typ+'. ¿Es correcto?')
+						csv.append(q.getAttribute("queryName")+'#ErrorTipoParametroEntrada#'+'Parametro '+param.getAttribute("parameterName")+' no es de tipo Long. Es de tipo '+typ+'. ¿Es correcto?')
 				elif(param.getAttribute("parameterName").find("queryDate")> -1 or param.getAttribute("parameterName").find("Date")> -1):
 					typ=param.getAttribute("type")
 					if(typ.find("Date")==-1):
 						if(typ==""):
 							typ="String"
 						warnings.append('Parametro '+param.getAttribute("parameterName")+' del metodo '+q.getAttribute("queryName")+ ' no es de tipo Date. Es de tipo '+typ+'. ¿Es correcto?')
-						csv.append(q.getAttribute("queryName")+'##ErrorTipoParametroEntrada##'+'Parametro '+param.getAttribute("parameterName")+' no es de tipo Date. Es de tipo '+typ+'. ¿Es correcto?')
+						csv.append(q.getAttribute("queryName")+'#ErrorTipoParametroEntrada#'+'Parametro '+param.getAttribute("parameterName")+' no es de tipo Date. Es de tipo '+typ+'. ¿Es correcto?')
 
 		return warnings,csv
 
@@ -386,7 +386,7 @@ class XMIValidator:
 			p=q.getAttribute("dtdDocumentation")
 			if(p==""):
 				warnings.append(q.getAttribute("queryName"))
-				csv.append(q.getAttribute("queryName")+'##MetodoSinDocumentacion##El metodo no tiene relleno el campo dtdDocumentation')
+				csv.append(q.getAttribute("queryName")+'#MetodoSinDocumentacion#El metodo no tiene relleno el campo dtdDocumentation')
 		return warnings,csv
 
 	def findEntitiesAndFieldsInDTDDoc(self,dtdDoc):
@@ -465,14 +465,14 @@ class XMIValidator:
 						troubles=True
 						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 						warnings.append(warn)
-						csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'@Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+						csv.append(q.getAttribute("queryName")+'#ErrorEnJOINS#'+'@Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 						#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entIzqNew+' usada en la parte IZQUIERDA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 					if(entDerNew not in self.attrEntModel):
 						troubles=True
 						existBothEntities=False
 						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 						warnings.append(warn)
-						csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'@Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
+						csv.append(q.getAttribute("queryName")+'#ErrorEnJOINS#'+'@Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 						#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #Entidad '+entDerNew+' usada en la parte DERECHA de una JOIN no existe o tiene un nombre distinto en el modelo.')
 					
 					# verifica si es posible por modelo la JOIN entre entIzq y entDer SOLO SI EXISTEN AMBAS
@@ -482,7 +482,7 @@ class XMIValidator:
 					 		troubles=True
 					 		warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
 					 		warnings.append(warn)
-					 		csv.append(q.getAttribute("queryName")+'##ErrorEnJOINS##'+'No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
+					 		csv.append(q.getAttribute("queryName")+'#ErrorEnJOINS#'+'No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
 					 		#warnings.append('Metodo: '+ q.getAttribute("queryName")+' #No es posible por modelo hacer una JOIN entre '+entIzqNew+' y '+entDerNew+'.')
 				if(troubles):
 					warnings.append("") #para linea en blanco y separar queries
@@ -515,14 +515,14 @@ class XMIValidator:
 						troubles=True
 						warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
 						warnings.append(warn)
-						csv.append(q.getAttribute("queryName")+'##ErrorFiltroEntidad.Campo##'+'@Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo')
+						csv.append(q.getAttribute("queryName")+'#ErrorFiltroEntidad.Campo#'+'@Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo')
 						#warnings.add('Metodo: '+ q.getAttribute("queryName")+' @Entidad '+entidad+' que se usa en los filtros no existe o tiene un nombre distinto en el modelo.')
 					else: #entidad existe, comprobar que el campo es de esa entidad
 						if(campo not in self.attrEntModel[entidad]):
 							troubles=True
 							warn='{: >80}  {: >80}'.format('Metodo: '+ q.getAttribute("queryName"), ' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
 							warnings.append(warn) #linea en blanco para separar queries
-							csv.append(q.getAttribute("queryName")+'##ErrorFiltroEntidad.Campo##'+'Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo')
+							csv.append(q.getAttribute("queryName")+'#ErrorFiltroEntidad.Campo#'+'Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo')
 							#warnings.add('Metodo: '+q.getAttribute("queryName")+' #Campo '+campo+' de la entidad '+entidad+' que aparece como filtro no se encuentra como atributo de esa entidad en el modelo.')
 				if(troubles):
 					warnings.append("")#para linea en blanco y separar queries
@@ -573,13 +573,13 @@ class XMIValidator:
 						paramQueryDate=True
 				if(not paramQueryDate): ##queryDate en doc pero no como parametro
 					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' se hace referencia a un queryDate que no aparece como parámetro de entrada')
-					csv.append(q.getAttribute("queryName")+'##ErrorEntreDocYParamentros##Se hace referencia a un queryDate que no aparece como parámetro de entrada')
+					csv.append(q.getAttribute("queryName")+'#ErrorEntreDocYParamentros#Se hace referencia a un queryDate que no aparece como parámetro de entrada')
 			#Comprobar lista en DOC y que devuelva Colecction or Collection
 			if(listaKW):
 				retType=q.getElementsByTagName("return")
 				if(not self.searchWordInText("Colecction",retType[0].getAttribute("xsi:type")) and not self.searchWordInText("Collection",retType[0].getAttribute("xsi:type"))):
 					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' aparece "lista" y el metodo no devuelve una lista de elementos')
-					csv.append(q.getAttribute("queryName")+'##ErrorEntreDocYParamentros##Aparece "lista" y el metodo no devuelve una lista de elementos')
+					csv.append(q.getAttribute("queryName")+'#ErrorEntreDocYParamentros#Aparece "lista" y el metodo no devuelve una lista de elementos')
 			#Comprobar id en DOC y que haya un parametro de entrada con id
 			if(idKW):
 				paramId=False
@@ -588,7 +588,7 @@ class XMIValidator:
 						paramId=True
 				if(not paramId): ##id en doc pero no como parametro
 					warnings.append('En la DOC del metodo '+q.getAttribute("queryName")+' se hace referencia a un id que no aparece como parámetro de entrada')
-					csv.append(q.getAttribute("queryName")+'##ErrorEntreDocYParamentros##Se hace referencia a un id que no aparece como parámetro de entrada')
+					csv.append(q.getAttribute("queryName")+'#ErrorEntreDocYParamentros#Se hace referencia a un id que no aparece como parámetro de entrada')
 		return warnings,csv
 
 	def getTypePojoField(self,dto,field):
@@ -596,34 +596,54 @@ class XMIValidator:
         Método que devuelve una lista de warnings con 
         los POJOS que aparezcan duplicados.
     	"""
-		
+		type=None
 		dtos=self.dom.getElementsByTagName("dtos")
 		for pojo in dtos:
 			if(pojo.getAttribute("dtoName")==dto):
 				attributes=pojo.getElementsByTagName("attribtesDTOs")
 				for attr in attributes:
-					if(attr.getAttribute("attributeName")==field):
-						return attr.getAttribute("type")
+					if(attr.getAttribute("attributeName").lower()==field):
+						type=attr.getAttribute("type")
+		return type
 
 	def getTypeEntityAttribute(self,entity,attrib):
-
+		type=None
 		entities=self.dom.getElementsByTagName("entities")
 		for e in entities:
 			if(e.getAttribute("entityName")==entity):
 				attributes=e.getElementsByTagName("attributes")
 				for at in attributes:
 					if(at.getAttribute("attributeName")==attrib):
-						return at.getAttribute("type")		
+						type=at.getAttribute("type")		
+		return type
 
 	def readTable(self,docx):
-		document = Document('prueba.docx')
-		tabla=document.tables[0]
-		for row in tabla.rows[1:]:
-			celdas=row.cells # 0 pojo, 1 campo pojo, 2 entidad, 3 atributo entidad
-			t1=self.getTypePojoField(celdas[0].text,celdas[1].text)
-			t2=self.getTypeEntityAttribute(celdas[2].text,celdas[3].text)
-			print(t1,t2)
-
+		f = open('InformeMapeos.txt', 'w')
+		document = Document(docx)
+		tablas=document.tables
+		for tabla in tablas:
+			rows=tabla.rows[1:]
+			mapeoName=rows[0].cells[0].text
+			msg='Warnings en el mapeo '+mapeoName
+			f.write('\n'+msg+'\n')
+			f.write("="*len(msg)+'\n')
+			for row in rows:
+				hayError=False
+				datos=row.cells # 0 pojo, 1 campo pojo, 2 entidad, 3 atributo entidad
+				t1=self.getTypePojoField(datos[0].text,datos[1].text.lower())
+				if(t1==None):
+					f.write('NO se encuentra el nombre del POJO en el XMI o no se encuentra el atributo '+datos[1].text+'\n')
+					hayError=True
+				entidad=datos[2].text[0].upper()+datos[2].text[1:]
+				t2=self.getTypeEntityAttribute(entidad,datos[3].text)
+				if(t2==None):
+					f.write('NO se encuentra la entidad '+entidad+' o el atributo '+datos[3].text+' no es de esa entidad\n')
+					hayError=True
+				if(not hayError):
+					if(t1!=t2):
+						f.write('NO se corresponden los tipos de datos en el campo '+datos[1].text+' con el del atributo equivalente en la entidad\n')
+			f.write('\n\n')
+		f.close()
 
 	def generateCSVs(self):
 		fEntAttr=open('Entidades_Atributos.csv', 'w')
@@ -648,7 +668,7 @@ class XMIValidator:
 		name=self.getDAOName()
 		f = open('Informe_'+name+'.txt', 'w')
 		fCSV = open('CSV_'+name+'.csv', 'w')
-		fCSV.write('Metodo##Tipo error##Descripcion error'+'\n')
+		fCSV.write('Metodo#Tipo error#Descripcion error'+'\n')
 		title='* Validaciones del DAO '+self.getDAOName()+' *'
 		f.write('*'*len(title)+'\n')
 		f.write(title+'\n')
@@ -802,8 +822,8 @@ else:
 	elif(sys.argv[1]=="-c"):
 		doc=sys.argv[2]
 		xmiVal=XMIValidator(doc)
-		xmiVal.generateReport()
 		xmiVal.readTable(sys.argv[3])
+		print("Ha terminado la validacion. Consulta el informe generado.")
 	else:
 		for doc in sys.argv[1:]:
 			if not doc.endswith('.xmi'):
