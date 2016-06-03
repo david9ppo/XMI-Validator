@@ -16,6 +16,8 @@ class XMIValidator:
 		self.entNames=self.loadEntityNamesInList()
 		self.attrEntModel=self.loadEntitiesAttributes()
 		self.relEntModel=self.loadEntitiesRelationships()
+		self.attrTypes=self.loadEntitiesAttributesTypes()
+		self.pojoTypes=self.loadEntitiesAttributesTypesPojos()
 
 	def getEntitiesAttributes(self):
 		list=[]
@@ -40,6 +42,51 @@ class XMIValidator:
 		for entity in entities:
 			entDict[entity.getAttribute("entityName")]=self.getAttributesFromEntity(entity)
 		return entDict
+
+	def loadEntitiesAttributesTypes(self):
+		"""
+        Método que crea y devuelve un diccionario:
+            	- key: cada una de las entidades del modelo
+            	- value: lista de atributos de la entidad
+    	"""
+		entDict={}
+		entities = self.dom.getElementsByTagName("entities")
+		for entity in entities:
+			entDict[entity.getAttribute("entityName")]=self.getAttributesAndTypeFromEntity(entity)
+		return entDict
+
+	def loadEntitiesAttributesTypesPojos(self):
+		"""
+        Método que crea y devuelve un diccionario:
+            	- key: cada una de las entidades del modelo
+            	- value: lista de atributos de la entidad
+    	"""
+		pojoDict={}
+		pojos = self.dom.getElementsByTagName("dtos")
+		for pojo in pojos:
+			pojoDict[pojo.getAttribute("dtoName").lower()]=self.getAttributesAndTypeFromPojo(pojo)
+		return pojoDict
+
+	def getAttributesAndTypeFromEntity(self,entity):
+		"""
+
+    	"""
+		attrList={}
+		attributes=entity.getElementsByTagName("attributes")
+		for at in attributes:
+			attrList[at.getAttribute("attributeName")]=at.getAttribute("type")
+		return attrList
+
+	def getAttributesAndTypeFromPojo(self,dto):
+		"""
+
+    	"""
+		attrList={}
+		attributes=dto.getElementsByTagName("attribtesDTOs")
+		for at in attributes:
+			attrList[at.getAttribute("attributeName").lower()]=at.getAttribute("type")
+		return attrList
+
 
 	def loadEntityNamesInList(self):
 		"""
@@ -600,27 +647,21 @@ class XMIValidator:
         Método que devuelve una lista de warnings con 
         los POJOS que aparezcan duplicados.
     	"""
-		type=None
 		n=-1
-		dtos=self.dom.getElementsByTagName("dtos")
-		for pojo in dtos:
-			if(pojo.getAttribute("dtoName")==dto):
-				attributes=pojo.getElementsByTagName("attribtesDTOs")
-				n =len(attributes)
-				for attr in attributes:
-					if(attr.getAttribute("attributeName").lower()==field):
-						type=attr.getAttribute("type")
+		type=None
+		if(dto in self.pojoTypes):
+			atributosDict=self.pojoTypes[dto]
+			n=len(atributosDict)
+			if(field in atributosDict):
+				type=atributosDict[field]
 		return type,n
 
 	def getTypeEntityAttribute(self,entity,attrib):
 		type=None
-		entities=self.dom.getElementsByTagName("entities")
-		for e in entities:
-			if(e.getAttribute("entityName")==entity):
-				attributes=e.getElementsByTagName("attributes")
-				for at in attributes:
-					if(at.getAttribute("attributeName")==attrib):
-						type=at.getAttribute("type")		
+		if(entity in self.attrTypes):
+			atributosDict=self.attrTypes[entity]
+			if(attrib in atributosDict):
+				type=atributosDict[attrib]
 		return type
 
 	def readTable(self,docx):
@@ -629,9 +670,9 @@ class XMIValidator:
 		document = Document(docx)
 		tablas=document.tables
 		if(pojosInModel!=len(tablas)):
-			f.write('\n¡¡¡¡¡¡NO COINCIDE EL NUMERO DE POJOS EN EL MODELO CON EL NUMERO DE MAPEOS DEL DOCUMENTO!!!!!!\n')
-		comprobado=False
+			f.write('\n¡¡¡¡¡¡NO COINCIDE EL NUMERO DE POJOS EN EL MODELO CON EL NUMERO DE MAPEOS DEL DOCUMENTO!!!!!!\n')	
 		for tabla in tablas:
+			comprobado=False
 			rows=tabla.rows[1:]
 			mapeoName=rows[0].cells[0].text
 			msg='Warnings en el mapeo '+mapeoName
@@ -640,7 +681,7 @@ class XMIValidator:
 			for row in rows:
 				hayError=False
 				datos=row.cells # 0 pojo, 1 campo pojo, 2 entidad, 3 atributo entidad
-				t1,number=self.getTypePojoField(datos[0].text,datos[1].text.lower())
+				t1,number=self.getTypePojoField(datos[0].text.lower(),datos[1].text.lower())
 				if(t1==None):
 					f.write('NO se encuentra el nombre del POJO en el XMI o no se encuentra el atributo '+datos[1].text+'\n')
 					hayError=True
@@ -649,9 +690,13 @@ class XMIValidator:
 						f.write('NO coincide el numero de atributos del POJO con el numero de filas del mapeo\n')
 						comprobado=True
 				entidad=datos[2].text[0].upper()+datos[2].text[1:]
-				t2=self.getTypeEntityAttribute(entidad,datos[3].text)
+				atrEntidad=datos[3].text
+				if(atrEntidad.find("(")>-1):
+					atrEntidad=atrEntidad.split("(")[0]
+					atrEntidad=atrEntidad.replace(" ",'')
+				t2=self.getTypeEntityAttribute(entidad,atrEntidad)
 				if(t2==None):
-					f.write('NO se encuentra la entidad '+entidad+' o el atributo '+datos[3].text+' no es de esa entidad\n')
+					f.write('NO se encuentra la entidad '+entidad+' o el atributo '+atrEntidad+' no es de esa entidad\n')
 					hayError=True
 				if(not hayError):
 					if(t1!=t2):
