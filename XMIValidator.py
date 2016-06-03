@@ -601,14 +601,16 @@ class XMIValidator:
         los POJOS que aparezcan duplicados.
     	"""
 		type=None
+		n=-1
 		dtos=self.dom.getElementsByTagName("dtos")
 		for pojo in dtos:
 			if(pojo.getAttribute("dtoName")==dto):
 				attributes=pojo.getElementsByTagName("attribtesDTOs")
+				n =len(attributes)
 				for attr in attributes:
 					if(attr.getAttribute("attributeName").lower()==field):
 						type=attr.getAttribute("type")
-		return type
+		return type,n
 
 	def getTypeEntityAttribute(self,entity,attrib):
 		type=None
@@ -628,6 +630,7 @@ class XMIValidator:
 		tablas=document.tables
 		if(pojosInModel!=len(tablas)):
 			f.write('\n¡¡¡¡¡¡NO COINCIDE EL NUMERO DE POJOS EN EL MODELO CON EL NUMERO DE MAPEOS DEL DOCUMENTO!!!!!!\n')
+		comprobado=False
 		for tabla in tablas:
 			rows=tabla.rows[1:]
 			mapeoName=rows[0].cells[0].text
@@ -637,10 +640,14 @@ class XMIValidator:
 			for row in rows:
 				hayError=False
 				datos=row.cells # 0 pojo, 1 campo pojo, 2 entidad, 3 atributo entidad
-				t1=self.getTypePojoField(datos[0].text,datos[1].text.lower())
+				t1,number=self.getTypePojoField(datos[0].text,datos[1].text.lower())
 				if(t1==None):
 					f.write('NO se encuentra el nombre del POJO en el XMI o no se encuentra el atributo '+datos[1].text+'\n')
 					hayError=True
+				if(not comprobado):
+					if(number!=len(rows)):
+						f.write('NO coincide el numero de atributos del POJO con el numero de filas del mapeo\n')
+						comprobado=True
 				entidad=datos[2].text[0].upper()+datos[2].text[1:]
 				t2=self.getTypeEntityAttribute(entidad,datos[3].text)
 				if(t2==None):
