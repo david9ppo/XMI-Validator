@@ -681,7 +681,9 @@ class XMIValidator:
 			for row in rows:
 				hayError=False
 				datos=row.cells # 0 pojo, 1 campo pojo, 2 entidad, 3 atributo entidad
-				t1,number=self.getTypePojoField(datos[0].text.lower(),datos[1].text.lower())
+				pojo=datos[0].text.lower().replace(" ",'')
+				cPojo=datos[1].text.lower().replace(" ",'')
+				t1,number=self.getTypePojoField(pojo,cPojo)
 				if(t1==None):
 					f.write('NO se encuentra el nombre del POJO en el XMI o no se encuentra el atributo '+datos[1].text+'\n')
 					hayError=True
@@ -690,10 +692,11 @@ class XMIValidator:
 						f.write('NO coincide el numero de atributos del POJO con el numero de filas del mapeo\n')
 						comprobado=True
 				entidad=datos[2].text[0].upper()+datos[2].text[1:]
+				entidad=entidad.replace(" ",'')
 				atrEntidad=datos[3].text
 				if(atrEntidad.find("(")>-1):
 					atrEntidad=atrEntidad.split("(")[0]
-					atrEntidad=atrEntidad.replace(" ",'')
+				atrEntidad=atrEntidad.replace(" ",'')
 				t2=self.getTypeEntityAttribute(entidad,atrEntidad)
 				if(t2==None):
 					f.write('NO se encuentra la entidad '+entidad+' o el atributo '+atrEntidad+' no es de esa entidad\n')
