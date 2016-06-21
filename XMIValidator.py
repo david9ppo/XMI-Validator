@@ -579,6 +579,22 @@ class XMIValidator:
 					warnings.append("")#para linea en blanco y separar queries
 		return warnings, csv
 
+
+	def checkParametersName(self):
+		warnings=[]
+		csv=[]
+		repos=self.dom.getElementsByTagName("repositories")
+		for repo in repos:
+			queries=repo.getElementsByTagName("queries")
+			for q in queries:
+				params=q.getElementsByTagName("parameters")
+				for p in params:
+					name=p.getAttribute("parameterName")
+					if(name.find(" ")>-1):
+						warnings.append('Método: '+q.getAttribute("queryName")+' del repo '+repo.getAttribute("repositoryName")+' -> Parámetro "'+name+'" contiene espacios. Revisar.')
+						csv.append(q.getAttribute("queryName")+'#EspaciosEnNombreParametro#'+'Parámetro '+name+' contiene espacios. Revisar.')
+		return warnings, csv
+
 	def searchWordInText(self,word, text):
 		"""
         Método que busca una cadena en un texto y 
@@ -771,6 +787,18 @@ class XMIValidator:
 		f.write('\n'+tp+'\n')
 		f.write("="*len(tp)+'\n')
 		w,c=self.checkParametersType()
+		if(w==[]):
+			f.write("OK"+'\n')
+		else:
+			for warning in w:
+				f.write(warning+'\n')
+			for csv in c:
+				fCSV.write(csv+'\n')
+
+		tp="Validando nomenclatura de parametros de entrada (que NO contengan espacios)..."
+		f.write('\n'+tp+'\n')
+		f.write("="*len(tp)+'\n')
+		w,c=self.checkParametersName()
 		if(w==[]):
 			f.write("OK"+'\n')
 		else:
